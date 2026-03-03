@@ -24,11 +24,11 @@ flowchart TD
     C -->|Auth & Real-time| D["Supabase Auth & Realtime"]
     B -->|JWT Auth Checks| D
     B -->|File Storage| E["Supabase Storage"]
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style C fill:#bfb,stroke:#333,stroke-width:2px
-    style D fill:#ffb,stroke:#333,stroke-width:2px
-    style E fill:#fbf,stroke:#333,stroke-width:2px
+    style A fill:#f9f,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#bbf,stroke:#333,stroke-width:2px,color:#fff
+    style C fill:#bfb,stroke:#333,stroke-width:2px,color:#fff
+    style D fill:#ffb,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#fbf,stroke:#333,stroke-width:2px,color:#fff
 ```
 
 The diagram illustrates the high‑level interactions between the client, FastAPI, and Supabase services.
