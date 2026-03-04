@@ -179,3 +179,6 @@ pnpm-debug.log*
 # Local Utility Scripts
 backend/app/seed_db.py
 backend/app/test_db.py
+backend/app/optimize_db.py
+backend/tests/
+test_results.txt

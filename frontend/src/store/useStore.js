@@ -30,10 +30,10 @@ const useStore = create((set, get) => ({
     },
 
     // Student actions
-    fetchStudents: async () => {
+    fetchStudents: async (params = {}) => {
         set({ loading: true });
         try {
-            const response = await apiClient.get('/students');
+            const response = await apiClient.get('/students', { params });
             set({ students: response.data, loading: false });
         } catch (err) {
             set({ error: 'Failed to fetch students', loading: false });
@@ -59,6 +59,17 @@ const useStore = create((set, get) => ({
         } catch (err) {
             set({ error: 'Failed to delete student' });
             return false;
+        }
+    },
+
+    // Course actions
+    fetchCourses: async (params = {}) => {
+        set({ loading: true });
+        try {
+            const response = await apiClient.get('/courses', { params });
+            set({ courses: response.data, loading: false });
+        } catch (err) {
+            set({ error: 'Failed to fetch courses', loading: false });
         }
     },
 

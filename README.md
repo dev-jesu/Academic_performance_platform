@@ -1,103 +1,73 @@
-# Academic Performance Assessment Platform
+# Academic Performance Assessment & Mentorship Platform
 
-A comprehensive platform for college academic performance assessment, mentorship tracking, and results management.
+A full-stack platform built with **FastAPI**, **Supabase (PostgreSQL)**, and **React** for managing student assessments, results, and mentor-mentee tracking.
 
-## Tech Stack
-- **Backend**: FastAPI (Python 3.12+)
-- **Database**: Supabase (PostgreSQL)
-- **Frontend**: React (Vite)
-- **State Management**: Zustand
-- **API Client**: Axios with JWT Interceptors
+## 🚀 Phase 3: UI/UX, Advanced Logic & Performance (Completed)
 
-## Project Structure
+This phase polished the platform for professional use, including high-end UI effects and optimized data handling.
+
+### ✨ Key Features
+- **UI/UX Refinement**: Premium Dark Mode with **Glassmorphism**, smooth animations via `framer-motion`, and real-time feedback with `react-hot-toast`.
+- **Advanced Search & Filtering**: Server-side optimized search (debounced) and multi-parameter filtering for Students and Courses.
+- **Data Pagination**: Integrated limit-offset pagination for efficient data handling.
+- **Database Optimization**: Implemented **GIN and Trigram indices** in Supabase for high-performance search results.
+- **Reliability**: 100% backend router test coverage for core entities.
+
+## 🛠️ Tech Stack
+- **Backend**: Python, FastAPI, Pydantic, Supabase (PostgreSQL).
+- **Frontend**: React (Vite), Tailwind CSS, Framer Motion, React-Hot-Toast.
+- **State Management**: Zustand.
+- **Testing**: Pytest, HTTPX.
+
+## 📁 Project Structure
 ```text
-/
-├── backend/                # FastAPI Backend
+miniProject/
+├── backend/
 │   ├── app/                # Application Logic
-│   │   ├── routers/        # API Routes (Auth, Students, etc.)
+│   │   ├── routers/        # API Routes (Auth, Students, Courses, etc.)
 │   │   ├── models.py       # Pydantic Schemas
-│   │   ├── database.py     # Supabase Client Init
-│   │   ├── init_db.py      # Schema Initialization Script
-│   │   ├── seed_db.py      # Sample Data Seeding Script
+│   │   ├── database.py     # Supabase Connection
 │   │   └── main.py         # App Entry Point
-│   └── requirements.txt    # Python Dependencies
+│   └── tests/              # Backend Unit Tests
 ├── frontend/               # React (Vite) Frontend
 │   ├── src/
-│   │   ├── api/            # Axios Client
 │   │   ├── components/     # UI Components (Dashboard, StudentList)
-│   │   ├── store/          # Zustand Global State
+│   │   ├── store/          # Zustand Global State Management
 │   │   └── App.jsx         # Routing & Protected Routes
-│   └── package.json        # Frontend Dependencies
-├── docs/                   # Documentation & Diagrams
-├── .env.example            # Environment Template
-└── README.md               # Project Overview
+└── docs/                   # Documentation (Schema, Prompts, etc.)
 ```
 
-## Installation & Setup
+## 🚀 Installation & Setup
 
-### 1. Prerequisites
-- Python 3.9+ and Node.js (Latest LTS)
-- Supabase Account & Project
-
-### 2. Backend Setup
 1. **Clone & Navigate**:
    ```bash
    git clone <your-repo-url>
    cd miniProject
    ```
 
-2. **Virtual Environment**:
+2. **Backend Setup**:
    ```bash
    python -m venv venv
-   # Windows:
    .\venv\Scripts\activate
-   # Linux/Mac:
-   source venv/bin/activate
-   ```
-
-3. **Install Dependencies**:
-   ```bash
    pip install -r backend/requirements.txt
-   ```
 
-4. **Environment Variables**:
-   Create a `.env` file in the root based on `.env.example`.
-
-5. **Initialize Database**:
-   ```bash
+   # Initialize Database & Indices
    python backend/app/init_db.py
+   python backend/app/optimize_db.py
    ```
 
-6. **Seed Database (Optional)**:
-   If you have the `seed_db.py` script locally:
-   ```bash
-   python backend/app/seed_db.py
-   ```
-
-7. **Run Server**:
-   ```bash
-   uvicorn backend.app.main:app --reload
-   ```
-
-### 3. Frontend Setup
-1. **Navigate & Install**:
+3. **Frontend Setup**:
    ```bash
    cd frontend
    npm install
-   ```
-
-2. **Run Dev Server**:
-   ```bash
    npm run dev
    ```
 
-## Documentation
-Refer to the `docs/` folder for:
-- [DB Schema](file:///docs/db_schema.md)
-- [Tech Stack Justification](file:///docs/tech_stack.md)
-- [UI Generation Prompt](file:///docs/ui_prompt.md)
+4. **Running Application**:
+   - **Frontend**: [http://localhost:5173/](http://localhost:5173/)
+   - **Backend**: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger UI)
 
-## Branching Strategy
-- `main`: Stable production code.
-- `dev`: Active integration.
-- `feature/*`: Specific feature branches.
+## 📄 Documentation
+- [Walkthrough](walkthrough.md)
+- [Database Schema](docs/db_schema.md)
+- [UI Prompt](docs/ui_prompt.md)

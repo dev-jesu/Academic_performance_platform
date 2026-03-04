@@ -1,13 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 from ..database import get_supabase
 from ..models import Student, StudentCreate
 
 router = APIRouter(prefix="/students", tags=["students"])
 
 @router.get("/", response_model=List[Student])
-async def get_students(supabase = Depends(get_supabase)):
-    response = supabase.table("student").select("*").execute()
+async def get_students(
+    q: Optional[str] = None,
+    major: Optional[str] = None,
+    limit: int = 10,
+    offset: int = 0,
+    supabase = Depends(get_supabase)
+):
+    query = supabase.table("student").select("*")
+    
+    if q:
+        # Simple search in name and email
+        query = query.or_(f"name.ilike.%{q}%,email.ilike.%{q}%")
+    
+    if major:
+        query = query.eq("major", major)
+        
+    response = query.range(offset, offset + limit - 1).execute()
     return response.data
 
 @router.post("/", response_model=Student, status_code=status.HTTP_201_CREATED)
