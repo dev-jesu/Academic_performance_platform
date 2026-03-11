@@ -1,45 +1,55 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import EmailStr
 from ..database import get_supabase
 from ..models import UserLogin, Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin, supabase = Depends(get_supabase)):
-    try:
-        # Sign in with Supabase Auth
-        response = supabase.auth.sign_in_with_password({
-            "email": credentials.email,
-            "password": credentials.password
-        })
-        
-        if not response.session:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials"
-            )
-            
-        return {
-            "access_token": response.session.access_token,
-            "token_type": "bearer"
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
-async def signup(credentials: UserLogin, supabase = Depends(get_supabase)):
-    try:
-        response = supabase.auth.sign_up({
-            "email": credentials.email,
-            "password": credentials.password
-        })
-        return {"message": "Verification email sent. Please check your inbox."}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    email = credentials.email
+    password = credentials.password
+
+    # Check mentor login
+    mentor_res = supabase.table("mentors") \
+        .select("*") \
+        .eq("email", email) \
+        .execute()
+
+    if mentor_res.data:
+        mentor = mentor_res.data[0]
+
+        if mentor["password"] == password:
+            return {
+                "access_token": f"mentor_token_{mentor['id']}",
+                "token_type": "bearer",
+                "role": "mentor"
+            }
+
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+
+    # Check student login
+    student_res = supabase.table("students") \
+        .select("*") \
+        .eq("email", email) \
+        .execute()
+
+    if student_res.data:
+        student = student_res.data[0]
+
+        if student["password"] == password:
+            return {
+                "access_token": f"student_token_{student['id']}",
+                "token_type": "bearer",
+                "role": "student"
+            }
+
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="User not found"
+    )

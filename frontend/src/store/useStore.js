@@ -5,71 +5,82 @@ const useStore = create((set, get) => ({
     user: null,
     students: [],
     courses: [],
-    loading: false,
+    isAuthLoading: false,
+    isStudentsLoading: false,
+    isCoursesLoading: false,
     error: null,
 
     // Auth actions
     login: async (email, password) => {
-        set({ loading: true, error: null });
+        set({ isAuthLoading: true, error: null });
         try {
             const response = await apiClient.post('/auth/login', { email, password });
-            const { access_token } = response.data;
+            const { access_token, role } = response.data;
             localStorage.setItem('token', access_token);
-            // In a real app, you might fetch the user profile here
-            set({ user: { email }, loading: false });
+            localStorage.setItem('role', role);
+            set({ user: { email, role }, isAuthLoading: false });
             return true;
         } catch (err) {
-            set({ error: err.response?.data?.detail || 'Login failed', loading: false });
+            set({ error: err.response?.data?.detail || 'Login failed', isAuthLoading: false });
             return false;
         }
     },
 
     logout: () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
         set({ user: null, students: [], courses: [] });
     },
 
     // Student actions
     fetchStudents: async (params = {}) => {
-        set({ loading: true });
+        set({ isStudentsLoading: true });
         try {
             const response = await apiClient.get('/students', { params });
-            set({ students: response.data, loading: false });
+            set({ students: response.data, isStudentsLoading: false });
         } catch (err) {
-            set({ error: 'Failed to fetch students', loading: false });
+            set({ error: 'Failed to fetch students', isStudentsLoading: false });
         }
     },
 
     addStudent: async (studentData) => {
+        set({ isStudentsLoading: true });
         try {
             const response = await apiClient.post('/students', studentData);
-            set((state) => ({ students: [...state.students, response.data] }));
+            set((state) => ({
+                students: [...state.students, response.data],
+                isStudentsLoading: false
+            }));
             return true;
         } catch (err) {
-            set({ error: 'Failed to add student' });
+            set({ error: 'Failed to add student', isStudentsLoading: false });
             return false;
         }
     },
 
     deleteStudent: async (id) => {
+        set({ isStudentsLoading: true });
         try {
             await apiClient.delete(`/students/${id}`);
-            set((state) => ({ students: state.students.filter(s => s.id !== id) }));
+            set((state) => ({
+                students: state.students.filter(s => s.id !== id),
+                isStudentsLoading: false
+            }));
             return true;
         } catch (err) {
-            set({ error: 'Failed to delete student' });
+            set({ error: 'Failed to delete student', isStudentsLoading: false });
             return false;
         }
     },
 
     // Course actions
     fetchCourses: async (params = {}) => {
-        set({ loading: true });
+        set({ isCoursesLoading: true });
         try {
             const response = await apiClient.get('/courses', { params });
-            set({ courses: response.data, loading: false });
+            set({ courses: response.data, isCoursesLoading: false });
         } catch (err) {
-            set({ error: 'Failed to fetch courses', loading: false });
+            set({ error: 'Failed to fetch courses', isCoursesLoading: false });
         }
     },
 

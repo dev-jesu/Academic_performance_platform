@@ -154,8 +154,13 @@ cython_debug/
 .DS_Store
 Thumbs.db
 
+dist/
+dist-ssr/
+*.local
+
 # Node / JS
 node_modules/
+frontend/dist/
 dist/
 dist-ssr/
 *.local
@@ -176,9 +181,16 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
+
 # Local Utility Scripts
 backend/app/seed_db.py
 backend/app/test_db.py
 backend/app/optimize_db.py
-backend/tests/
+backend/app/tests/
 test_results.txt
+
+# Python cache
+backend/app/__pycache__/
+backend/app/routers/__pycache__/
+backend/app/utils/__pycache__/
+backend/app/tests/__pycache__/

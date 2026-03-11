@@ -1,68 +1,62 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --color-primary-50: #f5f7ff;
+  --color-primary-100: #ebf0ff;
+  --color-primary-200: #dae3ff;
+  --color-primary-300: #b8c9ff;
+  --color-primary-400: #8da4ff;
+  --color-primary-500: #4f63ff;
+  --color-primary-600: #4338ca;
+  --color-primary-700: #3730a3;
+  --color-primary-800: #312e81;
+  --color-primary-900: #282761;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --font-sans: "Inter", "system-ui", "sans-serif";
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.04);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    margin: 0;
+    min-height: 100vh;
   }
-  a:hover {
-    color: #747bff;
+
+  #root {
+    @apply min-h-screen w-full;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-premium;
   }
+
+  .sidebar-link-active {
+    @apply bg-indigo-600/5 text-indigo-600 font-bold;
+  }
+}
+
+/* Custom Scrollbar - Minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300;
 }
