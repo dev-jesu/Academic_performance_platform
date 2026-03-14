@@ -10,8 +10,12 @@ from datetime import date
 class StudentBase(BaseModel):
     name: str
     email: EmailStr
-    department: Optional[str] = None
+    roll_no: Optional[str] = None
+    year: Optional[int] = 1
+    semester_id: Optional[int] = None
     cgpa: Optional[float] = Field(None, ge=0, le=10)
+    current_sgpa: Optional[float] = Field(0, ge=0, le=10)
+    final_cgpa: Optional[float] = Field(0, ge=0, le=10)
 
 
 class StudentCreate(StudentBase):
@@ -34,6 +38,7 @@ class CourseBase(BaseModel):
     title: str
     credits: int = Field(..., gt=0)
     department: Optional[str] = None
+    semester_id: Optional[int] = None
 
 
 class CourseCreate(CourseBase):
@@ -89,6 +94,11 @@ class Enrollment(EnrollmentBase):
     class Config:
         from_attributes = True
 
+class EnrollmentDetailed(Enrollment):
+    students: Optional[dict] = None
+    courses: Optional[dict] = None
+    semesters: Optional[dict] = None
+
 
 # -----------------------------
 # ASSESSMENT TYPE
@@ -129,6 +139,8 @@ class Assessment(AssessmentBase):
 class MentorBase(BaseModel):
     name: str
     email: EmailStr
+    faculty_id: Optional[str] = None
+    department: Optional[str] = None
 
 
 class MentorCreate(MentorBase):
@@ -174,3 +186,49 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     role: Optional[str] = "student"
+    name: Optional[str] = None
+    roll_no: Optional[str] = None
+    faculty_id: Optional[str] = None
+    department: Optional[str] = None
+
+
+# -----------------------------
+# ADMIN MODELS
+# -----------------------------
+
+# -----------------------------
+# ADMIN CREATE STUDENT
+# -----------------------------
+
+class AdminCreateStudent(BaseModel):
+    name: str
+    email: EmailStr
+    department: str
+    year: int
+    semester_id: int
+    password: str
+
+
+# -----------------------------
+# ADMIN CREATE MENTOR
+# -----------------------------
+
+class AdminCreateMentor(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    department: str
+    faculty_id: Optional[str] = None
+
+
+# -----------------------------
+# ASSIGN STUDENT TO MENTOR
+# -----------------------------
+
+class AssignStudentMentor(BaseModel):
+    student_id: int
+    mentor_id: int
+
+class AssignCourseMentor(BaseModel):
+    course_id: int
+    mentor_id: int

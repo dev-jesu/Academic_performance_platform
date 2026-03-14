@@ -24,7 +24,10 @@ async def login(credentials: UserLogin, supabase = Depends(get_supabase)):
             return {
                 "access_token": f"mentor_token_{mentor['id']}",
                 "token_type": "bearer",
-                "role": "mentor"
+                "role": "mentor",
+                "name": mentor["name"],
+                "faculty_id": mentor.get("faculty_id"),
+                "department": mentor.get("department")
             }
 
         raise HTTPException(status_code=401, detail="Invalid password")
@@ -43,10 +46,28 @@ async def login(credentials: UserLogin, supabase = Depends(get_supabase)):
             return {
                 "access_token": f"student_token_{student['id']}",
                 "token_type": "bearer",
-                "role": "student"
+                "role": "student",
+                "name": student["name"],
+                "roll_no": student.get("roll_no"),
+                "department": student.get("department")
             }
 
         raise HTTPException(status_code=401, detail="Invalid password")
+    
+
+    # check admin first
+    admin_res = supabase.table("admins").select("*").eq("email", email).execute()
+
+    if admin_res.data:
+        admin = admin_res.data[0]
+
+        if admin["password"] == password:
+            return {
+                "access_token": f"admin_token_{admin['id']}",
+                "token_type": "bearer",
+                "role": "admin",
+                "name": admin.get("name", "Administrator")
+            }
 
 
     raise HTTPException(

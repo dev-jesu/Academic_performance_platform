@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from ..database import get_supabase
-from ..models import Enrollment, EnrollmentCreate
+from ..models import Enrollment, EnrollmentCreate, EnrollmentDetailed
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
 
 
 # Get all enrollments
-@router.get("/", response_model=List[Enrollment])
+@router.get("/", response_model=List[EnrollmentDetailed])
 async def get_enrollments(supabase = Depends(get_supabase)):
 
-    res = supabase.table("enrollments").select("*").execute()
+    res = supabase.table("enrollments").select("*, students(id, name, mentorships(mentors(id, name))), courses(id, title), semesters(id, name)").execute()
 
     return res.data
 

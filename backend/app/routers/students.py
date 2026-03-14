@@ -25,40 +25,14 @@ async def get_students(
     return res.data
 
 
-@router.post("/", response_model=Student)
-async def create_student(student: StudentCreate, supabase = Depends(get_supabase)):
-
-    res = supabase.table("students").insert(student.model_dump()).execute()
-
-    return res.data[0]
-
-
-@router.get("/{student_id}", response_model=Student)
-async def get_student(student_id: int, supabase = Depends(get_supabase)):
-
-    res = supabase.table("students").select("*").eq("id", student_id).execute()
-
-    if not res.data:
-        raise HTTPException(404, "Student not found")
-
-    return res.data[0]
-
-
-@router.delete("/{student_id}")
-async def delete_student(student_id: int, supabase = Depends(get_supabase)):
-
-    supabase.table("students").delete().eq("id", student_id).execute()
-
-    return {"message": "Student deleted"}
-
 
 @router.get("/{student_id}/performance")
 async def get_student_performance(student_id: int, supabase = Depends(get_supabase)):
 
-    # Get student info
-    student_res = supabase.table("students") \
-        .select("*") \
-        .eq("id", student_id) \
+    # 1. Get student identity info with current semester pointer
+    student_res = supabase.table("students")\
+        .select("name, roll_no, year, department, final_cgpa, semester_id")\
+        .eq("id", student_id)\
         .execute()
 
     if not student_res.data:
@@ -66,57 +40,72 @@ async def get_student_performance(student_id: int, supabase = Depends(get_supaba
 
     student = student_res.data[0]
 
-    # Get enrollments for student
-    enrollments_res = supabase.table("enrollments") \
-        .select("*") \
-        .eq("student_id", student_id) \
+    # 2. Get Mentor Name
+    mentor_res = supabase.table("mentorships")\
+        .select("mentors(name)")\
+        .eq("student_id", student_id)\
+        .execute()
+    
+    mentor_name = mentor_res.data[0]["mentors"]["name"] if mentor_res.data and mentor_res.data[0].get("mentors") else "Not Assigned"
+
+    # 3. Get SGPA History from new table
+    sgpa_res = supabase.table("semester_results")\
+        .select("semester_id, sgpa")\
+        .eq("student_id", student_id)\
+        .execute()
+    
+    sgpa_map = {item["semester_id"]: item["sgpa"] for item in sgpa_res.data}
+
+    # 4. Get enrollments with nested courses and assessments
+    enrollments_res = supabase.table("enrollments")\
+        .select("semester_id, final_score, grade, courses(title), assessments(score, assessment_type_id)")\
+        .eq("student_id", student_id)\
         .execute()
 
-    results = []
+    semesters = {}
 
-    for enrollment in enrollments_res.data:
+    for enr in enrollments_res.data:
+        semester = enr["semester_id"]
+        assessments = enr.get("assessments", [])
 
-        course_id = enrollment["course_id"]
-        enrollment_id = enrollment["id"]
+        pt1 = next((a["score"] for a in assessments if a["assessment_type_id"] == 1), None)
+        pt2 = next((a["score"] for a in assessments if a["assessment_type_id"] == 2), None)
+        sem_exam = next((a["score"] for a in assessments if a["assessment_type_id"] == 3), None)
 
-        # Get course
-        course_res = supabase.table("courses") \
-            .select("title") \
-            .eq("id", course_id) \
-            .execute()
-
-        course_name = course_res.data[0]["title"]
-
-        # Get assessments
-        assess_res = supabase.table("assessments") \
-            .select("score, assessment_type_id") \
-            .eq("enrollment_id", enrollment_id) \
-            .execute()
-
-        pt1 = None
-        pt2 = None
-        sem = None
-
-        for a in assess_res.data:
-
-            if a["assessment_type_id"] == 1:
-                pt1 = a["score"]
-
-            elif a["assessment_type_id"] == 2:
-                pt2 = a["score"]
-
-            elif a["assessment_type_id"] == 3:
-                sem = a["score"]
-
-        results.append({
-            "course": course_name,
+        course_data = {
+            "course": enr["courses"]["title"] if enr.get("courses") else "Unknown",
             "pt1": pt1,
             "pt2": pt2,
-            "semester": sem,
-            "grade": enrollment["grade"]
-        })
+            "semester_exam": sem_exam,
+            "final_score": enr.get("final_score"),
+            "grade": enr.get("grade")
+        }
+
+        if semester not in semesters:
+            semesters[semester] = {
+                "semester": semester,
+                "sgpa": sgpa_map.get(semester, 0.0),
+                "courses": []
+            }
+
+        semesters[semester]["courses"].append(course_data)
+
+    # Added even if no enrollments yet but SGPA exists
+    for sem_id, sgpa in sgpa_map.items():
+        if sem_id not in semesters:
+            semesters[sem_id] = {
+                "semester": sem_id,
+                "sgpa": sgpa,
+                "courses": []
+            }
 
     return {
         "student": student["name"],
-        "courses": results
+        "roll_no": student["roll_no"],
+        "year": student["year"],
+        "semester_id": student["semester_id"],
+        "department": student["department"],
+        "cgpa": student["final_cgpa"],
+        "mentor_name": mentor_name,
+        "semesters": list(semesters.values())
     }

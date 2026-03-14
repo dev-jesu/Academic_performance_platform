@@ -13,20 +13,22 @@ async def get_mentors(supabase = Depends(get_supabase)):
     return res.data
 
 
-@router.post("/", response_model=Mentor)
-async def create_mentor(mentor: MentorCreate, supabase = Depends(get_supabase)):
-
-    res = supabase.table("mentors").insert(mentor.model_dump()).execute()
-
+@router.get("/{mentor_id}", response_model=Mentor)
+async def get_mentor(mentor_id: int, supabase = Depends(get_supabase)):
+    res = supabase.table("mentors").select("*").eq("id", mentor_id).execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Mentor not found")
     return res.data[0]
+
+
 
 
 @router.get("/{mentor_id}/students")
 async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
 
-    res = supabase.table("mentorships") \
-        .select("students(*)") \
-        .eq("mentor_id", mentor_id) \
+    res = supabase.table("mentorships")\
+        .select("students(*)")\
+        .eq("mentor_id", mentor_id)\
         .execute()
 
     return [row["students"] for row in res.data]
@@ -35,21 +37,20 @@ async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
 @router.get("/{mentor_id}/courses")
 async def get_mentor_courses(mentor_id: int, supabase = Depends(get_supabase)):
 
-    res = supabase.table("courses") \
-        .select("*") \
-        .eq("mentor_id", mentor_id) \
+    res = supabase.table("course_mentors")\
+        .select("courses(*)")\
+        .eq("mentor_id", mentor_id)\
         .execute()
 
-    return res.data
+    return [row["courses"] for row in res.data]
 
 
 @router.get("/{mentor_id}/dashboard")
 async def mentor_dashboard(mentor_id: int, supabase = Depends(get_supabase)):
 
-    # Get mentor info
-    mentor_res = supabase.table("mentors") \
-        .select("*") \
-        .eq("id", mentor_id) \
+    mentor_res = supabase.table("mentors")\
+        .select("*")\
+        .eq("id", mentor_id)\
         .execute()
 
     if not mentor_res.data:
@@ -57,21 +58,19 @@ async def mentor_dashboard(mentor_id: int, supabase = Depends(get_supabase)):
 
     mentor = mentor_res.data[0]
 
-    # Get students under mentor
-    students_res = supabase.table("mentorships") \
-        .select("students(id,name)") \
-        .eq("mentor_id", mentor_id) \
+    students_res = supabase.table("mentorships")\
+        .select("students(id,name,roll_no,department,year)")\
+        .eq("mentor_id", mentor_id)\
         .execute()
 
     students = [s["students"] for s in students_res.data]
 
-    # Get courses taught by mentor
-    courses_res = supabase.table("courses") \
-        .select("id,title") \
-        .eq("mentor_id", mentor_id) \
+    courses_res = supabase.table("course_mentors")\
+        .select("courses(id,title)")\
+        .eq("mentor_id", mentor_id)\
         .execute()
 
-    courses = courses_res.data
+    courses = [c["courses"] for c in courses_res.data]
 
     return {
         "mentor": mentor["name"],
@@ -80,3 +79,23 @@ async def mentor_dashboard(mentor_id: int, supabase = Depends(get_supabase)):
         "students": students,
         "courses": courses
     }
+
+@router.get("/{mentor_id}/course/{course_id}/students")
+async def get_course_students(mentor_id: int, course_id: int, supabase = Depends(get_supabase)):
+    # Verify mentor teaches this course
+    mapping = supabase.table("course_mentors")\
+        .select("*")\
+        .eq("mentor_id", mentor_id)\
+        .eq("course_id", course_id)\
+        .execute()
+    
+    if not mapping.data:
+        raise HTTPException(status_code=403, detail="Mentor not assigned to this course")
+
+    # Get students enrolled in this course with their assessments
+    res = supabase.table("enrollments")\
+        .select("id, students(id, name, email), assessments(score, assessment_type_id)")\
+        .eq("course_id", course_id)\
+        .execute()
+
+    return res.data

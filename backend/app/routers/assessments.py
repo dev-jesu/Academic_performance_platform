@@ -17,8 +17,22 @@ async def get_assessments(supabase = Depends(get_supabase)):
 @router.post("/", response_model=Assessment)
 async def create_assessment(data: AssessmentCreate, supabase = Depends(get_supabase)):
 
-    # Insert new mark
-    res = supabase.table("assessments").insert(data.model_dump()).execute()
+    # UPSERT mark (update if exists for enrollment + type combo)
+    # Check if exists first
+    existing = supabase.table("assessments")\
+        .select("id")\
+        .eq("enrollment_id", data.enrollment_id)\
+        .eq("assessment_type_id", data.assessment_type_id)\
+        .execute()
+
+    if existing.data:
+        res = supabase.table("assessments")\
+            .update(data.model_dump(mode='json'))\
+            .eq("id", existing.data[0]["id"])\
+            .execute()
+    else:
+        res = supabase.table("assessments").insert(data.model_dump(mode='json')).execute()
+    
     assessment = res.data[0]
 
     enrollment_id = data.enrollment_id

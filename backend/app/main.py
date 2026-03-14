@@ -12,7 +12,11 @@ from .routers import (
     students,
     courses,
     mentors,
+    semesters,
+    enrollments,
     assessments,
+    analytics,
+    admin
 )
 
 # Future routers
@@ -51,9 +55,11 @@ app.include_router(auth.router)
 app.include_router(students.router)
 app.include_router(courses.router)
 app.include_router(mentors.router)
-app.include_router(assessments.router)
 app.include_router(semesters.router)
 app.include_router(enrollments.router)
+app.include_router(assessments.router)
+app.include_router(analytics.router)
+app.include_router(admin.router)
 
 # Uncomment later when created
 # app.include_router(semesters.router)

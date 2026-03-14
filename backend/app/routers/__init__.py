@@ -1,1 +1,1 @@
-from . import auth, students, mentors, courses, semesters, enrollments, assessments
+from . import auth, students, courses, mentors, assessments, semesters, enrollments, analytics

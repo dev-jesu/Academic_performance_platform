@@ -1,62 +1,47 @@
-@import "tailwindcss";
-
-@theme {
-  --color-primary-50: #f5f7ff;
-  --color-primary-100: #ebf0ff;
-  --color-primary-200: #dae3ff;
-  --color-primary-300: #b8c9ff;
-  --color-primary-400: #8da4ff;
-  --color-primary-500: #4f63ff;
-  --color-primary-600: #4338ca;
-  --color-primary-700: #3730a3;
-  --color-primary-800: #312e81;
-  --color-primary-900: #282761;
-
-  --font-sans: "Inter", "system-ui", "sans-serif";
-
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 2rem;
-
-  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.04);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
-    margin: 0;
-    min-height: 100vh;
-  }
-
-  #root {
-    @apply min-h-screen w-full;
+    @apply bg-slate-50 text-slate-900 selection:bg-blue-100 font-sans;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-premium;
+    @apply bg-white border border-slate-200 shadow-sm rounded-2xl;
+  }
+  
+  .glass-sidebar {
+    @apply bg-white border-r border-slate-200 shadow-sm;
   }
 
-  .sidebar-link-active {
-    @apply bg-indigo-600/5 text-indigo-600 font-bold;
+  .glass-navbar {
+    @apply bg-white/80 backdrop-blur-lg border-b border-slate-200;
   }
-}
 
-/* Custom Scrollbar - Minimal */
-::-webkit-scrollbar {
-  width: 6px;
-}
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .btn-glass {
+    @apply bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
+  }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full;
-}
+  .input-field {
+    @apply bg-white border border-slate-300 rounded-xl px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-slate-400;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-300;
+  .table-container {
+    @apply bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm;
+  }
+
+  .table-header {
+    @apply bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider px-6 py-4;
+  }
+
+  .table-row {
+    @apply hover:bg-slate-50 transition-colors border-t border-slate-100;
+  }
 }
