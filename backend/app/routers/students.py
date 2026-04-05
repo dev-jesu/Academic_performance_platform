@@ -2,16 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from ..database import get_supabase
 from ..models import Student, StudentCreate
+from app.utils.dependencies import get_current_user   # ✅ NEW
 
 router = APIRouter(prefix="/students", tags=["students"])
 
 
+# -----------------------------
+# GET ALL STUDENTS (ADMIN ONLY)
+# -----------------------------
 @router.get("/", response_model=List[Student])
 async def get_students(
     q: Optional[str] = None,
     department: Optional[str] = None,
-    supabase = Depends(get_supabase)
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
 ):
+
+    # ✅ Only admin allowed
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
 
     query = supabase.table("students").select("*")
 
@@ -25,11 +34,27 @@ async def get_students(
     return res.data
 
 
-
+# -----------------------------
+# STUDENT PERFORMANCE
+# -----------------------------
 @router.get("/{student_id}/performance")
-async def get_student_performance(student_id: int, supabase = Depends(get_supabase)):
+async def get_student_performance(
+    student_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
 
-    # 1. Get student identity info with current semester pointer
+    # ✅ Authorization check
+    if user["role"] == "student":
+        if user["id"] != student_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+    elif user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # -----------------------------
+    # 1. Get student info
+    # -----------------------------
     student_res = supabase.table("students")\
         .select("name, roll_no, year, department, final_cgpa, semester_id")\
         .eq("id", student_id)\
@@ -40,15 +65,23 @@ async def get_student_performance(student_id: int, supabase = Depends(get_supaba
 
     student = student_res.data[0]
 
-    # 2. Get Mentor Name
+    # -----------------------------
+    # 2. Get mentor name
+    # -----------------------------
     mentor_res = supabase.table("mentorships")\
         .select("mentors(name)")\
         .eq("student_id", student_id)\
         .execute()
     
-    mentor_name = mentor_res.data[0]["mentors"]["name"] if mentor_res.data and mentor_res.data[0].get("mentors") else "Not Assigned"
+    mentor_name = (
+        mentor_res.data[0]["mentors"]["name"]
+        if mentor_res.data and mentor_res.data[0].get("mentors")
+        else "Not Assigned"
+    )
 
-    # 3. Get SGPA History from new table
+    # -----------------------------
+    # 3. SGPA history
+    # -----------------------------
     sgpa_res = supabase.table("semester_results")\
         .select("semester_id, sgpa")\
         .eq("student_id", student_id)\
@@ -56,7 +89,9 @@ async def get_student_performance(student_id: int, supabase = Depends(get_supaba
     
     sgpa_map = {item["semester_id"]: item["sgpa"] for item in sgpa_res.data}
 
-    # 4. Get enrollments with nested courses and assessments
+    # -----------------------------
+    # 4. Enrollments + assessments
+    # -----------------------------
     enrollments_res = supabase.table("enrollments")\
         .select("semester_id, final_score, grade, courses(title), assessments(score, assessment_type_id)")\
         .eq("student_id", student_id)\
@@ -90,7 +125,7 @@ async def get_student_performance(student_id: int, supabase = Depends(get_supaba
 
         semesters[semester]["courses"].append(course_data)
 
-    # Added even if no enrollments yet but SGPA exists
+    # Include SGPA-only semesters
     for sem_id, sgpa in sgpa_map.items():
         if sem_id not in semesters:
             semesters[sem_id] = {

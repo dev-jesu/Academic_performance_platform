@@ -1,12 +1,23 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 from ..database import get_supabase
+from app.utils.dependencies import get_current_user   # ✅ NEW
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
+# -----------------------------
+# CLASS PERFORMANCE (ADMIN ONLY)
+# -----------------------------
 @router.get("/class-performance")
-async def class_performance(department: Optional[str] = None, supabase = Depends(get_supabase)):
+async def class_performance(
+    department: Optional[str] = None,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
 
     if department:
         res = supabase.table("enrollments")\
@@ -22,9 +33,7 @@ async def class_performance(department: Optional[str] = None, supabase = Depends
         return {"message": "No scores available"}
 
     avg = sum(scores) / len(scores)
-
     topper = max(scores)
-
     weak = [s for s in scores if s < 50]
 
     return {
@@ -34,8 +43,18 @@ async def class_performance(department: Optional[str] = None, supabase = Depends
     }
 
 
+# -----------------------------
+# GRADE DISTRIBUTION (ADMIN ONLY)
+# -----------------------------
 @router.get("/grade-distribution")
-async def grade_distribution(department: Optional[str] = None, supabase = Depends(get_supabase)):
+async def grade_distribution(
+    department: Optional[str] = None,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
 
     if department:
         res = supabase.table("enrollments")\
@@ -55,9 +74,27 @@ async def grade_distribution(department: Optional[str] = None, supabase = Depend
     return dist
 
 
+# -----------------------------
+# STUDENT PROGRESS
+# -----------------------------
 @router.get("/student-progress/{student_id}")
-async def student_progress(student_id: int, supabase = Depends(get_supabase)):
+async def student_progress(
+    student_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
 
+    # ✅ Authorization logic
+    if user["role"] == "student":
+        if user["id"] != student_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+    elif user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # -----------------------------
+    # Fetch enrollments
+    # -----------------------------
     enrollments = supabase.table("enrollments")\
         .select("id")\
         .eq("student_id", student_id)\

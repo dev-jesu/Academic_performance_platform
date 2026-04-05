@@ -1,16 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import date
 from ..database import get_supabase
-from ..models import AdminCreateStudent, AdminCreateMentor,AssignStudentMentor,AssignCourseMentor
+from ..models import AdminCreateStudent, AdminCreateMentor, AssignStudentMentor, AssignCourseMentor
+from app.utils.dependencies import get_current_user   # ✅ NEW
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+# -----------------------------
+# HELPER: ADMIN AUTH CHECK
+# -----------------------------
+def require_admin(user):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
 
 
 # -----------------------------
 # CREATE STUDENT
 # -----------------------------
 @router.post("/students")
-async def create_student(student: AdminCreateStudent, supabase = Depends(get_supabase)):
+async def create_student(
+    student: AdminCreateStudent,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)   # ✅ NEW
+):
+    require_admin(user)  # ✅ NEW
 
     data = student.model_dump()
 
@@ -59,11 +73,15 @@ async def create_student(student: AdminCreateStudent, supabase = Depends(get_sup
 # CREATE MENTOR
 # -----------------------------
 @router.post("/mentors")
-async def create_mentor(mentor: AdminCreateMentor, supabase = Depends(get_supabase)):
+async def create_mentor(
+    mentor: AdminCreateMentor,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
     data = mentor.model_dump()
 
-    # check if email already exists
     existing = supabase.table("mentors")\
         .select("id")\
         .eq("email", mentor.email)\
@@ -83,11 +101,13 @@ async def create_mentor(mentor: AdminCreateMentor, supabase = Depends(get_supaba
 # -----------------------------
 # ASSIGN STUDENT TO MENTOR
 # -----------------------------
-
-from datetime import date
-
 @router.post("/assign-student")
-async def assign_student(data: AssignStudentMentor, supabase = Depends(get_supabase)):
+async def assign_student(
+    data: AssignStudentMentor,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
     student = supabase.table("students")\
         .select("id")\
@@ -116,23 +136,25 @@ async def assign_student(data: AssignStudentMentor, supabase = Depends(get_supab
         "mapping": res.data[0]
     }
 
+
 # -----------------------------
 # ADMIN DASHBOARD
 # -----------------------------
 @router.get("/dashboard")
-async def admin_dashboard(supabase = Depends(get_supabase)):
+async def admin_dashboard(
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
-    # get students
     students = supabase.table("students")\
         .select("id,name,email,roll_no,year,final_cgpa")\
         .execute()
 
-    # get mentors
     mentors = supabase.table("mentors")\
         .select("id,name,email,department")\
         .execute()
 
-    # get mentor-student mapping
     mappings = supabase.table("mentorships")\
         .select("students(name,email), mentors(name,department), start_date")\
         .execute()
@@ -146,10 +168,17 @@ async def admin_dashboard(supabase = Depends(get_supabase)):
     }
 
 
+# -----------------------------
+# GET STUDENT DETAILS
+# -----------------------------
 @router.get("/students/{student_id}")
-async def get_student(student_id: int, supabase = Depends(get_supabase)):
+async def get_student(
+    student_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
-    # get student info
     student = supabase.table("students")\
         .select("id,name,email,roll_no,year,department,final_cgpa")\
         .eq("id", student_id)\
@@ -158,7 +187,6 @@ async def get_student(student_id: int, supabase = Depends(get_supabase)):
     if not student.data:
         raise HTTPException(404, "Student not found")
 
-    # get mentor mapping
     mentor = supabase.table("mentorships")\
         .select("mentors(name,email,department)")\
         .eq("student_id", student_id)\
@@ -170,11 +198,17 @@ async def get_student(student_id: int, supabase = Depends(get_supabase)):
     }
 
 
-
+# -----------------------------
+# GET MENTOR STUDENTS
+# -----------------------------
 @router.get("/mentors/{mentor_id}/students")
-async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
+async def get_mentor_students(
+    mentor_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
-    # get mentor details
     mentor = supabase.table("mentors")\
         .select("id,name,email,department")\
         .eq("id", mentor_id)\
@@ -183,7 +217,6 @@ async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
     if not mentor.data:
         raise HTTPException(404, "Mentor not found")
 
-    # get students under mentor
     students = supabase.table("mentorships")\
         .select("students(id,name,email,roll_no,year,final_cgpa)")\
         .eq("mentor_id", mentor_id)\
@@ -191,7 +224,6 @@ async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
 
     student_list = [s["students"] for s in students.data]
 
-    # get subjects taught by mentor
     courses = supabase.table("course_mentors")\
         .select("courses(id,code,title,credits)")\
         .eq("mentor_id", mentor_id)\
@@ -206,15 +238,17 @@ async def get_mentor_students(mentor_id: int, supabase = Depends(get_supabase)):
     }
 
 
-
-
 # -----------------------------
-# ASSIGN SUBJECT TO MENTOR
+# ASSIGN COURSE TO MENTOR
 # -----------------------------
 @router.post("/assign-course")
-async def assign_course(data: AssignCourseMentor, supabase = Depends(get_supabase)):
+async def assign_course(
+    data: AssignCourseMentor,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
 
-    # check course exists
     course = supabase.table("courses")\
         .select("id")\
         .eq("id", data.course_id)\
@@ -223,7 +257,6 @@ async def assign_course(data: AssignCourseMentor, supabase = Depends(get_supabas
     if not course.data:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    # check mentor exists
     mentor = supabase.table("mentors")\
         .select("id")\
         .eq("id", data.mentor_id)\
@@ -232,7 +265,6 @@ async def assign_course(data: AssignCourseMentor, supabase = Depends(get_supabas
     if not mentor.data:
         raise HTTPException(status_code=404, detail="Mentor not found")
 
-    # check duplicate mapping
     existing = supabase.table("course_mentors")\
         .select("id")\
         .eq("course_id", data.course_id)\
@@ -240,15 +272,14 @@ async def assign_course(data: AssignCourseMentor, supabase = Depends(get_supabas
         .execute()
 
     if existing.data:
-        raise HTTPException(status_code=400, detail="Mentor already assigned to this course")
+        raise HTTPException(status_code=400, detail="Mentor already assigned")
 
-    # insert mapping
     res = supabase.table("course_mentors").insert({
         "course_id": data.course_id,
         "mentor_id": data.mentor_id
     }).execute()
 
     return {
-        "message": "Course assigned to mentor successfully",
+        "message": "Course assigned successfully",
         "mapping": res.data[0]
     }

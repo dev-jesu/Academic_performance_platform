@@ -27,12 +27,10 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const user = authService.getCurrentUser();
-        const token = localStorage.getItem("token");
-        const tokenParts = token.split("_");
-        const studentId = tokenParts[tokenParts.length - 1];
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser || !currentUser.id) throw new Error("User not authenticated");
 
-        const performanceData = await studentService.getPerformance(studentId);
+        const performanceData = await studentService.getPerformance(currentUser.id);
         setData(performanceData);
       } catch (err) {
         setError("Failed to load dashboard data.");

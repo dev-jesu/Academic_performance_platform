@@ -31,18 +31,14 @@ const Profile = () => {
     const fetchProfileData = async () => {
       try {
         const currentUser = authService.getCurrentUser();
-        const token = localStorage.getItem("token");
         setUser(currentUser);
 
-        if (token) {
-          const tokenParts = token.split("_");
-          const userId = tokenParts[tokenParts.length - 1];
-          
-          if (currentUser?.role === 'student') {
-            const perfData = await studentService.getPerformance(userId);
+        if (currentUser?.id) {
+          if (currentUser.role === 'student') {
+            const perfData = await studentService.getPerformance(currentUser.id);
             setData(perfData);
-          } else if (currentUser?.role === 'mentor') {
-            const mData = await mentorService.getMentor(userId);
+          } else if (currentUser.role === 'mentor') {
+            const mData = await mentorService.getMentor(currentUser.id);
             setMentorData(mData);
           }
         }

@@ -186,6 +186,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     role: Optional[str] = "student"
+    id: int
     name: Optional[str] = None
     roll_no: Optional[str] = None
     faculty_id: Optional[str] = None

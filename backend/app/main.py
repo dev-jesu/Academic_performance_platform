@@ -34,10 +34,7 @@ app = FastAPI(
 # CORS CONFIGURATION
 # -----------------------------
 
-origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -46,6 +43,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://ggjjwgczbzxhketbgatf.supabase.co"
+    return response
 
 # -----------------------------
 # REGISTER ROUTERS
@@ -71,11 +78,12 @@ app.include_router(admin.router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    is_dev = os.getenv("ENVIRONMENT", "development") == "development"
     return JSONResponse(
         status_code=500,
         content={
             "message": "An internal server error occurred.",
-            "detail": str(exc),
+            "detail": str(exc) if is_dev else "Please contact support for assistance.",
         },
     )
 

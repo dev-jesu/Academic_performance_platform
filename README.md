@@ -17,8 +17,11 @@ We have recently finalized the core performance and identity modules, transformi
 ## 🛠️ Tech Stack
 - **Backend**: Python 3.x, FastAPI, Pydantic (Strong Typing), Supabase (PostgreSQL).
 - **Frontend**: React (Vite), Tailwind CSS, Framer Motion, Recharts.
-- **Authentication**: JWT-based secure session management with role-based access control (Student, Mentor, Admin).
-- **Database**: PostgreSQL with GIN/Trigram search indexing and complex relational mappings.
+- **Authentication**: Perfected JWT-based secure session management featuring:
+    - **Argon2/Bcrypt Password Hashing**: Securely stored credentials using `passlib`.
+    - **Role-Based Access Control (RBAC)**: Fine-grained permissions for Student, Mentor, and Admin.
+    - **Session Recovery**: Automatic token recovery and session expiration handling (401 logout).
+- **Database**: PostgreSQL with Supabase, GIN/Trigram search indexing, and relational performance tracking.
 
 ## 📁 Project Structure
 ```text

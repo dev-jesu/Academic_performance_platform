@@ -27,8 +27,8 @@ const MentorDashboard = () => {
     const fetchData = async () => {
       try {
         const user = authService.getCurrentUser();
-        const tokenParts = user.access_token.split("_");
-        const mentorId = tokenParts[tokenParts.length - 1];
+        if (!user || !user.id) throw new Error("Mentor not authenticated");
+        const mentorId = user.id;
 
         const dashboardData = await mentorService.getDashboard(mentorId);
         setData(dashboardData);

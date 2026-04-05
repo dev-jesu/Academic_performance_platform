@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
 import adminService from "../services/adminService";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import GradeDistribution from "../components/charts/GradeDistribution";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import EmptyState from "../components/common/EmptyState";
 
 const AdminDashboard = () => {
   const [data, setData] = useState(null);
@@ -53,7 +54,7 @@ const AdminDashboard = () => {
     if (!loading) fetchGrades();
   }, [selectedDept]);
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-900">Loading...</div>;
+  if (loading) return <LoadingSpinner fullPage />;
 
   return (
     <DashboardLayout title="Administrative Control Center">
@@ -160,35 +161,43 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {data?.mentor_student_mapping.map((mapping, idx) => (
-                  <tr key={idx} className="table-row group">
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{mapping.students?.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-black text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">#{mapping.students?.roll_no}</span>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{mapping.students?.email}</span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:text-violet-400 transition-colors">
-                          {mapping.mentors?.name?.[0]}
+                {data?.mentor_student_mapping.length > 0 ? (
+                  data.mentor_student_mapping.map((mapping, idx) => (
+                    <tr key={idx} className="table-row group animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                      <td className="px-8 py-6">
+                        <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{mapping.students?.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-black text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">#{mapping.students?.roll_no}</span>
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{mapping.students?.email}</span>
                         </div>
-                        <span className="text-sm font-bold text-slate-300 group-hover:text-slate-900 transition-colors">{mapping.mentors?.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="px-3 py-1 rounded-lg bg-slate-50/50 border border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:border-indigo-500/30 transition-colors">
-                        {mapping.mentors?.department || "GENERAL"}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <span className="text-[11px] font-mono font-bold text-slate-600">
-                        {mapping.start_date || "UNDEFINED"}
-                      </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:text-violet-400 transition-colors">
+                            {mapping.mentors?.name?.[0]}
+                          </div>
+                          <span className="text-sm font-bold text-slate-300 group-hover:text-slate-900 transition-colors">{mapping.mentors?.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="px-3 py-1 rounded-lg bg-slate-50/50 border border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:border-indigo-500/30 transition-colors">
+                          {mapping.mentors?.department || "GENERAL"}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <span className="text-[11px] font-mono font-bold text-slate-600">
+                          {mapping.start_date || "UNDEFINED"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">
+                      <EmptyState message="Registry Clearance: 0 Records Found" />
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

@@ -184,6 +184,10 @@ pnpm-debug.log*
 
 # Local Utility Scripts
 test_results.txt
+backend/tests/
+backend/scripts/hash_passwords.py
+backend/scripts/hashing_log.txt
+backend/dependency_fix_report.md
 
 # Python cache
 backend/app/__pycache__/

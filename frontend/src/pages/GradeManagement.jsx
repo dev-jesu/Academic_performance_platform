@@ -15,7 +15,7 @@ const GradeManagement = () => {
 
   useEffect(() => {
     const user = authService.getCurrentUser();
-    const id = user.access_token.split("_").pop();
+    const id = user?.id;
     setMentorId(id);
 
     const fetchCourses = async () => {
