@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional, List
 from datetime import date
 from ..database import get_supabase
-from ..models import AdminCreateStudent, AdminCreateMentor, AssignStudentMentor, AssignCourseMentor
+from ..models import AdminCreateStudent, AdminCreateMentor, AssignStudentMentor, AssignCourseMentor, ResetPassword
 from app.utils.dependencies import get_current_user   # ✅ NEW
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -374,3 +374,25 @@ async def delete_mentor(
     supabase.table("mentors").delete().eq("id", mentor_id).execute()
 
     return {"message": f"Mentor '{mentor.data[0]['name']}' deleted successfully"}
+
+
+# -----------------------------
+# RESET PASSWORD
+# -----------------------------
+@router.post("/reset-password")
+async def reset_password(
+    data: ResetPassword,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
+
+    table = "students" if data.user_type == "student" else "mentors"
+    
+    # Update the password directly
+    res = supabase.table(table).update({"password": data.new_password}).eq("id", data.user_id).execute()
+
+    if not res.data:
+        raise HTTPException(404, f"{data.user_type.capitalize()} not found")
+
+    return {"message": "Password reset successfully"}

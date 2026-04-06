@@ -71,11 +71,11 @@ const Mentors = () => {
         <div className="glass-card p-10 flex items-center justify-between bg-white">
           <div>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Academic Mentors</h3>
-            <p className="text-slate-500 text-sm font-medium mt-1">Directory of certified faculty members and their departments.</p>
+            <p className="text-slate-500 text-sm font-medium mt-1">List of all certified faculty members.</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="bg-violet-500/10 border border-violet-500/20 px-5 py-2.5 rounded-xl">
-              <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest">{mentors.length} Mentors Registered</span>
+               <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest">{mentors.length} Faculty Members</span>
             </div>
             <button 
               onClick={() => setShowAddForm(!showAddForm)}
@@ -151,7 +151,7 @@ const Mentors = () => {
                   disabled={loading}
                   className="px-12 btn-primary h-12 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-violet-500/20 bg-violet-600 hover:bg-violet-700"
                 >
-                  {loading ? "Registering..." : "Commit Faculty Profile"}
+                  {loading ? "Registering..." : "Add Mentor"}
                 </button>
               </div>
             </form>
@@ -199,12 +199,27 @@ const Mentors = () => {
                       </span>
                     </td>
                     <td className="px-8 py-6 text-center">
-                       <button
-                         onClick={() => setDeleteConfirm(mentor)}
-                         className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-colors"
-                       >
-                         Delete
-                       </button>
+                       <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              const newPassword = prompt(`Enter new password for ${mentor.name}:`);
+                              if (newPassword) {
+                                adminService.resetPassword(mentor.id, 'mentor', newPassword)
+                                  .then(() => alert("Password reset successfully!"))
+                                  .catch(err => alert("Failed to reset password: " + err.message));
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-[10px] font-black text-blue-500 uppercase tracking-widest hover:bg-blue-100 transition-colors"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(mentor)}
+                            className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-colors"
+                          >
+                            Delete
+                          </button>
+                       </div>
                     </td>
                   </tr>
                 ))}

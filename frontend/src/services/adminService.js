@@ -51,6 +51,11 @@ const deleteMentor = async (mentorId) => {
   return response.data;
 };
 
+const resetPassword = async (user_id, user_type, new_password) => {
+  const response = await api.post("/admin/reset-password", { user_id, user_type, new_password });
+  return response.data;
+};
+
 const adminService = {
   getDashboard,
   getStudents,
@@ -61,6 +66,7 @@ const adminService = {
   createMentor,
   deleteStudent,
   deleteMentor,
+  resetPassword,
 };
 
 export default adminService;

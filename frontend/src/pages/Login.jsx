@@ -43,8 +43,8 @@ const Login = () => {
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
             <span className="text-white font-black text-3xl italic">A</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter uppercase">Academic Sync</h1>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Sign In</p>
+          <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter uppercase">Result Portal</h1>
+          <p className="text-slate-400 text-xs font-black uppercase tracking-widest italic mt-2">Login</p>
         </div>
 
         {error && (
@@ -88,8 +88,8 @@ const Login = () => {
         </form>
 
         <div className="mt-12 pt-8 border-t border-slate-100 text-center">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
-            Academic Performance Analysis v2.0
+          <p className="text-slate-400 text-xs font-black uppercase tracking-widest">
+            Academic Result Portal
           </p>
         </div>
       </div>

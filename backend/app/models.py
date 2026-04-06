@@ -234,3 +234,12 @@ class AssignStudentMentor(BaseModel):
 class AssignCourseMentor(BaseModel):
     course_id: int
     mentor_id: int
+
+# -----------------------------
+# PASSWORD RESET MODEL
+# -----------------------------
+
+class ResetPassword(BaseModel):
+    user_id: int
+    user_type: str # 'student' or 'mentor'
+    new_password: str

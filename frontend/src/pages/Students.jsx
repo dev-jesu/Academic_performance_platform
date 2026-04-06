@@ -104,12 +104,12 @@ function Students() {
       <div className="space-y-10 w-full max-w-[1400px] mx-auto">
          <div className="glass-card p-10 flex items-center justify-between bg-white">
             <div>
-               <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Academic Cohort</h3>
-               <p className="text-slate-500 text-sm font-medium mt-1">Comprehensive list of all registered student identities.</p>
+               <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Student List</h3>
+               <p className="text-slate-500 text-sm font-medium mt-1">List of all registered students.</p>
             </div>
             <div className="flex items-center gap-4">
                <div className="bg-indigo-500/10 border border-indigo-500/20 px-5 py-2.5 rounded-xl">
-                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{students.length} Records Detected</span>
+                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{students.length} Students List</span>
                </div>
                <button 
                 onClick={() => setShowAddForm(!showAddForm)}
@@ -243,12 +243,27 @@ function Students() {
                        <span className="text-[10px] font-black text-slate-300 ml-1">/10</span>
                     </td>
                     <td className="px-8 py-6 text-center">
-                       <button
-                         onClick={() => setDeleteConfirm(student)}
-                         className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-colors"
-                       >
-                         Delete
-                       </button>
+                       <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              const newPassword = prompt(`Enter new password for ${student.name}:`);
+                              if (newPassword) {
+                                adminService.resetPassword(student.id, 'student', newPassword)
+                                  .then(() => alert("Password reset successfully!"))
+                                  .catch(err => alert("Failed to reset password: " + err.message));
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-[10px] font-black text-blue-500 uppercase tracking-widest hover:bg-blue-100 transition-colors"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(student)}
+                            className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-colors"
+                          >
+                            Delete
+                          </button>
+                       </div>
                     </td>
                   </tr>
                 ))}

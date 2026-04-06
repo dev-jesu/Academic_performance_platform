@@ -67,7 +67,7 @@ const MentorDashboard = () => {
         <div className="glass-card p-10 bg-white border-l-8 border-indigo-500 shadow-xl shadow-indigo-500/5">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mb-2">Mentor Info</p>
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">Faculty Portal</p>
                 <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tight italic decoration-indigo-200 decoration-8 underline-offset-[-2px]">{authService.getCurrentUser()?.name}</h2>
                 <div className="flex items-center gap-4 mt-6">
                    <span className="text-[10px] font-black text-slate-500 uppercase bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">
