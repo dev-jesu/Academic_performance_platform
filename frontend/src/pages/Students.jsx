@@ -45,7 +45,7 @@ function Students() {
 
         const res = await api.get("/students");
 
-        setStudents(res.data);
+        setStudents(res?.data || []);
 
       } catch (error) {
 
@@ -93,7 +93,7 @@ function Students() {
   const totalPages = Math.ceil(students.length / itemsPerPage);
   const indexOfLastStudent = currentPage * itemsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - itemsPerPage;
-  const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = students?.slice(indexOfFirstStudent, indexOfLastStudent) || [];
 
   const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const nextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));

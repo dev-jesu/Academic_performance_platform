@@ -32,7 +32,7 @@ const Mentors = () => {
     const fetchMentors = async () => {
       try {
         const res = await api.get("/mentors");
-        setMentors(res.data);
+        setMentors(res?.data || []);
       } catch (error) {
         console.error("Error fetching mentors:", error);
       }
@@ -172,7 +172,7 @@ const Mentors = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {mentors.map((mentor) => (
+                {mentors?.map((mentor) => (
                   <tr key={mentor.id} className="table-row group">
                     <td className="px-8 py-6">
                       <span className="font-mono font-bold text-violet-400 opacity-60">#M-{mentor.id}</span>

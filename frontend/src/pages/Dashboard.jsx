@@ -34,7 +34,7 @@ const AdminDashboard = () => {
         setData(dashboardData);
         
         // Format grade dist for recharts: { grade, count }
-        const formattedGrades = Object.entries(gradeDist).map(([grade, count]) => ({
+        const formattedGrades = Object.entries(gradeDist || {}).map(([grade, count]) => ({
           grade,
           count
         }));
@@ -55,8 +55,8 @@ const AdminDashboard = () => {
     const fetchStudents = async () => {
        try {
           const res = await adminService.getStudents(studentSearch, studentFilterDept, limit, page * limit);
-          setStudentsList(res.students);
-          setTotalStudents(res.total);
+          setStudentsList(res?.students || []);
+          setTotalStudents(res?.total || 0);
        } catch (err) {
           console.error("Student fetch failed:", err);
        }
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
     const fetchGrades = async () => {
       try {
         const gradeDist = await adminService.getGradeDistribution(selectedDept);
-        const formattedGrades = Object.entries(gradeDist).map(([grade, count]) => ({
+        const formattedGrades = Object.entries(gradeDist || {}).map(([grade, count]) => ({
           grade,
           count
         }));
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
                     </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-50">
-                    {studentsList.map((s) => (
+                    {studentsList?.map((s) => (
                        <tr key={s.id} className="table-row group">
                           <td className="px-8 py-6">
                              <p className="text-sm font-black text-slate-900 group-hover:text-indigo-500 transition-colors uppercase tracking-tight">{s.name}</p>

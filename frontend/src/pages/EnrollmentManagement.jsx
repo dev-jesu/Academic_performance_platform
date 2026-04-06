@@ -37,10 +37,10 @@ const EnrollmentManagement = () => {
           api.get("/semesters"), // Assuming this exists
           api.get("/courses")
         ]);
-        setStudents(dashData.students);
-        setEnrollments(enrollData);
-        setSemesters(semesterRes.data);
-        setCourses(courseRes.data);
+        setStudents(dashData?.students || []);
+        setEnrollments(enrollData || []);
+        setSemesters(semesterRes?.data || []);
+        setCourses(courseRes?.data || []);
       } catch (err) {
         console.error(err);
       }
@@ -89,7 +89,7 @@ const EnrollmentManagement = () => {
                 onChange={e => setSelectedStudent(e.target.value)}
               >
                 <option value="">Search Student Identity...</option>
-                {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.roll_no} • {getRomanYear(s.year)})</option>)}
+                {students?.map(s => <option key={s.id} value={s.id}>{s.name} ({s.roll_no} • {getRomanYear(s.year)})</option>)}
               </select>
             </div>
             <div className="space-y-3">
@@ -100,7 +100,7 @@ const EnrollmentManagement = () => {
                 onChange={e => setSelectedCourse(e.target.value)}
               >
                 <option value="">Select Course...</option>
-                {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
               </select>
             </div>
             <div className="space-y-3">
@@ -111,7 +111,7 @@ const EnrollmentManagement = () => {
                 onChange={e => setSelectedSemester(e.target.value)}
               >
                 <option value="">Select Semester...</option>
-                {semesters.map(s => <option key={s.id} value={s.id}>{s.name} ({s.academic_year})</option>)}
+                {semesters?.map(s => <option key={s.id} value={s.id}>{s.name} ({s.academic_year})</option>)}
               </select>
             </div>
           </div>
@@ -151,7 +151,7 @@ const EnrollmentManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {enrollments.map((e) => {
+                {enrollments?.map((e) => {
                   const mentor = e.students?.mentorships?.[0]?.mentors;
                   return (
                     <tr key={e.id} className="table-row group text-sm">
