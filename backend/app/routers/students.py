@@ -49,6 +49,16 @@ async def get_student_performance(
         if user["id"] != student_id:
             raise HTTPException(status_code=403, detail="Access denied")
 
+    elif user["role"] == "mentor":
+        # Verify the mentor is assigned to this student
+        mentorship_check = supabase.table("mentorships")\
+            .select("id")\
+            .eq("mentor_id", user["id"])\
+            .eq("student_id", student_id)\
+            .execute()
+        if not mentorship_check.data:
+            raise HTTPException(status_code=403, detail="Not your assigned student")
+
     elif user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
 

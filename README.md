@@ -7,21 +7,23 @@ A professional-grade, full-stack platform built with **FastAPI**, **Supabase (Po
 We have recently finalized the core performance and identity modules, transforming the platform into a high-utility academic tool.
 
 ### ✨ Key Features
+- **Dynamic GPA Engine**: Fully automated CGPA & SGPA computation pipeline that dynamically scales with course credits and accurately maps against assessment parameters.
 - **Premium Student Profiles**: Dynamic, initial-based avatars, academic status checks, and comprehensive metadata including Romanized semester values and mentor assignments.
-- **Faculty ID System**: Dedicated Faculty ID integration for all mentors, allowing for institutional tracking and personalized dashboards.
+- **Faculty & Administrative Consoles**: Centralized student registry with advanced pagination (20 records per page), quick search filtering, and precise mentorship data mapping.
 - **Mentor Intelligence Suite**: Specialized dashboards for faculty members featuring "Mentee Fleet" monitoring and "Course Portfolio" management.
 - **Visual Performance Analytics**: Interactive **SGPA Trend Charts** (Bar Charts) and course-wise performance visualizations without visual clutter (grid-free mode).
 - **UI/UX Refinement**: Premium Dark Mode with **Glassmorphism**, smooth transitions, and a consistent "Institutional Premium" aesthetic.
 - **Optimized Data Pipeline**: Real-time academic results synchronization and historical SGPA performance tracking via the `semester_results` matrix.
 
 ## 🛠️ Tech Stack
-- **Backend**: Python 3.x, FastAPI, Pydantic (Strong Typing), Supabase (PostgreSQL).
-- **Frontend**: React (Vite), Tailwind CSS, Framer Motion, Recharts.
+- **Backend (API)**: Python 3.10+, FastAPI, Pydantic (Strong Typing).
+- **Frontend (Client)**: React (Vite environment), Tailwind CSS for styling, Framer Motion for micro-interactions, Recharts for dynamic analytics.
 - **Authentication**: Perfected JWT-based secure session management featuring:
-    - **Argon2/Bcrypt Password Hashing**: Securely stored credentials using `passlib`.
-    - **Role-Based Access Control (RBAC)**: Fine-grained permissions for Student, Mentor, and Admin.
-    - **Session Recovery**: Automatic token recovery and session expiration handling (401 logout).
-- **Database**: PostgreSQL with Supabase, GIN/Trigram search indexing, and relational performance tracking.
+    - **Secure Password Hashing**: Utilizes bcrypt via `passlib`.
+    - **Role-Based Access Control (RBAC)**: Fine-grained permissions for Student, Mentor, and Admin roles.
+    - **Session Recovery**: Automatic token recovery and session expiration handling (401 logout mechanisms).
+- **Database Architecture**: PostgreSQL hosted on Supabase, featuring GIN/Trigram search indexing and complex relational performance tracking.
+- **CI/CD Integration**: GitHub Actions workflows enabling automated Python backend test suites and React ESLint validation.
 
 ## 📁 Project Structure
 ```text

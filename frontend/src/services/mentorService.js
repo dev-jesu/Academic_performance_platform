@@ -5,8 +5,11 @@ const getDashboard = async (mentorId) => {
   return response.data;
 };
 
-const getMentorStudents = async (mentorId) => {
-  const response = await api.get(`/mentors/${mentorId}/students`);
+const getMentorStudents = async (mentorId, search = "", department = "") => {
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  if (department) params.append("department", department);
+  const response = await api.get(`/mentors/${mentorId}/students?${params.toString()}`);
   return response.data;
 };
 

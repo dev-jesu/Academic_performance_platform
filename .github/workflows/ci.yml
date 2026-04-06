@@ -33,7 +33,7 @@ jobs:
     - name: Execute Backend Tests
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
-        pytest backend/app/tests --ignore=backend/app/tests/__pycache__ || echo "No tests found or tests failed"
+        pytest backend/tests --ignore=backend/tests/__pycache__ || echo "No tests found or tests failed"
 
   frontend-validation:
     name: Frontend (React/Vite) Validation
@@ -51,6 +51,11 @@ jobs:
     - name: Install Dependencies
       working-directory: ./frontend
       run: npm ci
+      
+    - name: Run Static Code Analysis (ESLint)
+      working-directory: ./frontend
+      run: npm run lint
+      continue-on-error: true
       
     - name: Verify Production Build
       working-directory: ./frontend

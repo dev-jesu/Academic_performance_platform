@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import adminService from "../services/adminService";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import GradeDistribution from "../components/charts/GradeDistribution";
@@ -10,6 +11,17 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
+
+  // Paginated Students state
+  const [studentsList, setStudentsList] = useState([]);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [page, setPage] = useState(0);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [studentFilterDept, setStudentFilterDept] = useState("");
+  const limit = 20;
+
+  // Mapping Search/Filter
+  const [mappingSearch, setMappingSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +50,20 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
+  // Fetch paginated students
+  useEffect(() => {
+    const fetchStudents = async () => {
+       try {
+          const res = await adminService.getStudents(studentSearch, studentFilterDept, limit, page * limit);
+          setStudentsList(res.students);
+          setTotalStudents(res.total);
+       } catch (err) {
+          console.error("Student fetch failed:", err);
+       }
+    };
+    if (!loading) fetchStudents();
+  }, [page, studentSearch, studentFilterDept, loading]);
+
   useEffect(() => {
     const fetchGrades = async () => {
       try {
@@ -54,153 +80,217 @@ const AdminDashboard = () => {
     if (!loading) fetchGrades();
   }, [selectedDept]);
 
+  // Filtering for Local Mappings (Simple)
+  const filteredMappings = data?.mentor_student_mapping?.filter(m => {
+     const mentorName = m.mentors?.name?.toLowerCase() || "";
+     const studentName = m.students?.name?.toLowerCase() || "";
+     const search = mappingSearch.toLowerCase();
+     return mentorName.includes(search) || studentName.includes(search);
+  }) || [];
+
   if (loading) return <LoadingSpinner fullPage />;
 
   return (
-    <DashboardLayout title="Administrative Control Center">
+   <DashboardLayout title="Dashboard">
       <div className="space-y-12 w-full max-w-[1400px] mx-auto">
-        {/* Statistics Cards */}
+   {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="glass-card p-8 flex items-center justify-between group hover:border-indigo-500/30 transition-all duration-500">
-            <div>
-              <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em] mb-2">Total Students</p>
-              <h3 className="text-3xl font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{data?.total_students || 0}</h3>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-black text-xl border border-indigo-500/20 group-hover:scale-110 transition-transform">
-              👥
-            </div>
-          </div>
-          
-          <div className="glass-card p-8 flex items-center justify-between group hover:border-violet-500/30 transition-all duration-500">
-            <div>
-              <p className="text-[10px] text-violet-400 font-black uppercase tracking-[0.2em] mb-2">Certified Mentors</p>
-              <h3 className="text-3xl font-black text-slate-900 group-hover:text-violet-400 transition-colors">{data?.total_mentors || 0}</h3>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 font-black text-xl border border-violet-500/20 group-hover:rotate-12 transition-transform">
-              🎓
-            </div>
-          </div>
+           <div className="glass-card p-8 flex items-center justify-between border-l-4 border-indigo-500">
+             <div>
+               <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-1">Students</p>
+               <h3 className="text-3xl font-black text-slate-900">{data?.total_students || 0} Students</h3>
+             </div>
+             <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-xl">👥</div>
+           </div>
+           
+           <div className="glass-card p-8 flex items-center justify-between border-l-4 border-violet-500">
+             <div>
+               <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest mb-1">Teachers</p>
+               <h3 className="text-3xl font-black text-slate-900">{data?.total_mentors || 0} Mentors</h3>
+             </div>
+             <div className="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-xl">🎓</div>
+           </div>
 
-          <div className="glass-card p-8 flex items-center justify-between group hover:border-cyan-500/30 transition-all duration-500 lg:col-span-2">
-            <div>
-              <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-2">Platform Status</p>
-              <h3 className="text-xl font-black text-slate-900 group-hover:text-cyan-400 transition-colors uppercase tracking-tight">System Operational</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Direct Database Connection: Active</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-ping" />
-              <span className="w-2 h-2 bg-cyan-500 rounded-full" />
-            </div>
-          </div>
+           <div className="md:col-span-2 glass-card p-8 flex items-center justify-between bg-gradient-to-r from-slate-900 to-indigo-900 text-white border-0 shadow-indigo-500/20">
+              <div>
+                <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mb-1">School Status</p>
+                <h3 className="text-xl font-bold italic tracking-tight">Classes Running Smoothly</h3>
+              </div>
+              <div className="flex gap-2">
+                 <div className="w-3 h-3 bg-indigo-400 rounded-full animate-ping" />
+                 <div className="w-3 h-3 bg-indigo-400 rounded-full" />
+              </div>
+           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Grade Distribution */}
-          <div className="glass-card p-8 relative overflow-hidden">
-             <div className="mb-8 flex items-center justify-between">
+          <div className="glass-card p-10">
+             <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Grade Spectrum Analysis</h3>
-                   <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1.5 italic">Institutional Performance Metrics</p>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight underline decoration-indigo-200 decoration-4 underline-offset-8">Grades Overview</h3>
+                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-4 italic">All Departments</p>
                 </div>
-                <select 
-                  className="input-field h-10 px-4 text-[10px] font-black uppercase tracking-widest w-40"
-                  value={selectedDept}
-                  onChange={(e) => setSelectedDept(e.target.value)}
-                >
-                  <option value="">Global View</option>
-                  <option value="CSE">CSE Dept</option>
-                  <option value="MECH">MECH Dept</option>
-                  <option value="CIVIL">CIVIL Dept</option>
-                </select>
+                <div className="flex flex-col gap-2">
+                   <span className="text-[10px] font-black text-slate-400 uppercase text-right">Filter Department</span>
+                   <select 
+                     className="input-field h-10 px-6 text-[10px] font-black uppercase tracking-widest w-48 bg-slate-50"
+                     value={selectedDept}
+                     onChange={(e) => setSelectedDept(e.target.value)}
+                   >
+                     <option value="">All Departments</option>
+                     <option value="CSE">Computing Science</option>
+                     <option value="MECH">Mechanical Eng.</option>
+                     <option value="CIVIL">Civil Engineering</option>
+                   </select>
+                </div>
              </div>
-             <GradeDistribution data={grades} />
+             {grades.length > 0 ? (
+                <div className="h-[400px]">
+                   <GradeDistribution data={grades} />
+                </div>
+             ) : (
+                <div className="py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No grade data for {selectedDept || 'all departments'}</p>
+                </div>
+             )}
           </div>
           
-          {/* Mapping Summary Table */}
+          {/* Administrative Summary & Mentorship Mapping */}
           <div className="glass-card overflow-hidden">
-            <div className="p-8 border-b border-slate-200 bg-white">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">Administrative Summary</h3>
-              <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1.5">Operational Overview</p>
+            <div className="p-8 border-b border-slate-100 bg-white">
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Mentor-Student List</h3>
+               <div className="mt-6 flex gap-4">
+                  <div className="relative flex-1">
+                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                               <input 
+                                  type="text" 
+                                  placeholder="Search mentor or student..." 
+                                  className="input-field h-10 pl-10 text-[10px] font-black uppercase tracking-widest"
+                                  value={mappingSearch}
+                                  onChange={(e) => setMappingSearch(e.target.value)}
+                               />
+                  </div>
+               </div>
             </div>
-            <div className="p-8">
-              <p className="text-slate-400 text-sm font-medium mb-8 leading-relaxed">Centralized oversight of mentor-student dynamics across all academic departments.</p>
-              <div className="space-y-6">
-                 <div className="flex justify-between items-center p-4 rounded-xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Assignments</span>
-                    <span className="text-xl font-black text-indigo-400 font-mono tracking-tighter">{data?.mentor_student_mapping.length}</span>
-                 </div>
-                 <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-5 text-center">
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Sync Cycle</p>
-                    <p className="text-sm font-bold text-slate-900 mt-1">Automatic (Every 5 minutes)</p>
-                 </div>
-              </div>
+            <div className="max-h-[500px] overflow-y-auto">
+               <table className="w-full text-left">
+                  <thead className="sticky top-0 bg-white shadow-sm z-10">
+                     <tr>
+                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Dept</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                     {filteredMappings.map((m, i) => (
+                        <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
+                           <td className="px-6 py-4">
+                              <p className="text-xs font-black text-indigo-500 uppercase">{m.students?.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Assigned to: <span className="text-slate-900 italic font-black">{m.mentors?.name}</span></p>
+                           </td>
+                           <td className="px-6 py-4 text-right">
+                              <span className="text-[9px] font-black bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-500">
+                                 {m.students?.department}
+                              </span>
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+               {filteredMappings.length === 0 && <EmptyState message="No mentor-student pairs found" />}
             </div>
           </div>
         </div>
 
-        {/* Mentor-Student Mappings Table */}
-        <div className="table-container">
-          <div className="p-8 border-b border-slate-200 flex justify-between items-center bg-white">
-            <div>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">Mentorship List</h3>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1.5 italic">Cross-Departmental Mapping</p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-               <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-               <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Real-time Pipeline</span>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="table-header">Student Identity</th>
-                  <th className="table-header">Primary Mentor</th>
-                  <th className="table-header">Division</th>
-                  <th className="table-header text-right">Inception Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data?.mentor_student_mapping.length > 0 ? (
-                  data.mentor_student_mapping.map((mapping, idx) => (
-                    <tr key={idx} className="table-row group animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
-                      <td className="px-8 py-6">
-                        <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{mapping.students?.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-black text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">#{mapping.students?.roll_no}</span>
-                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{mapping.students?.email}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:text-violet-400 transition-colors">
-                            {mapping.mentors?.name?.[0]}
-                          </div>
-                          <span className="text-sm font-bold text-slate-300 group-hover:text-slate-900 transition-colors">{mapping.mentors?.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className="px-3 py-1 rounded-lg bg-slate-50/50 border border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:border-indigo-500/30 transition-colors">
-                          {mapping.mentors?.department || "GENERAL"}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <span className="text-[11px] font-mono font-bold text-slate-600">
-                          {mapping.start_date || "UNDEFINED"}
-                        </span>
-                      </td>
+        {/* Paginated Student Registry */}
+        <div className="table-container shadow-2xl shadow-indigo-500/5">
+           <div className="p-10 border-b border-slate-100 bg-white flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div>
+                 <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Student List</h3>
+                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">All Students</p>
+              </div>
+              
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                 <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                    <input 
+                      type="text" 
+                      placeholder="Search by Name or Roll No" 
+                      className="input-field h-12 w-64 pl-12 text-[10px] font-black uppercase tracking-widest"
+                      value={studentSearch}
+                      onChange={(e) => { setStudentSearch(e.target.value); setPage(0); }}
+                    />
+                 </div>
+                 <select 
+                    className="input-field h-12 px-6 text-[10px] font-black uppercase tracking-widest w-48 bg-slate-50"
+                    value={studentFilterDept}
+                    onChange={(e) => { setStudentFilterDept(e.target.value); setPage(0); }}
+                 >
+                    <option value="">All Departments</option>
+                    <option value="CSE">CSE</option>
+                    <option value="MECH">MECH</option>
+                    <option value="CIVIL">CIVIL</option>
+                 </select>
+              </div>
+           </div>
+
+           <div className="overflow-x-auto min-h-[400px]">
+              <table className="w-full text-left">
+                 <thead>
+                    <tr>
+                       <th className="table-header w-1/3">Student Identity</th>
+                       <th className="table-header">Department</th>
+                       <th className="table-header">Academic Year</th>
+                       <th className="table-header text-right">CGPA</th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4">
-                      <EmptyState message="Registry Clearance: 0 Records Found" />
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                 </thead>
+                 <tbody className="divide-y divide-slate-50">
+                    {studentsList.map((s) => (
+                       <tr key={s.id} className="table-row group">
+                          <td className="px-8 py-6">
+                             <p className="text-sm font-black text-slate-900 group-hover:text-indigo-500 transition-colors uppercase tracking-tight">{s.name}</p>
+                             <p className="text-[10px] font-bold text-slate-400 font-mono italic mt-0.5">{s.email} | #{s.roll_no}</p>
+                          </td>
+                          <td className="px-8 py-6 font-black text-[10px] text-slate-500 uppercase tracking-widest">
+                             {s.department}
+                          </td>
+                          <td className="px-8 py-6 font-black text-[10px] text-slate-500 uppercase tracking-widest">
+                             Academic Yr-{s.year}
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                             <span className="text-xl font-black text-slate-900 underline decoration-indigo-100 decoration-4">{s.final_cgpa?.toFixed(2) || '0.00'}</span>
+                             <span className="text-[10px] font-black text-slate-300 ml-1">/10.0</span>
+                          </td>
+                       </tr>
+                    ))}
+                 </tbody>
+              </table>
+              {studentsList.length === 0 && <EmptyState message="No students found" />}
+           </div>
+
+           {/* Pagination Dashboard */}
+           <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col md:flex-row items-center justify-between gap-6">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                 Showing <span className="text-slate-900">{(page * limit) + 1} - {Math.min((page + 1) * limit, totalStudents)}</span> of {totalStudents} students
+              </p>
+              
+              <div className="flex items-center gap-3">
+                 <button 
+                   disabled={page === 0}
+                   onClick={() => setPage(p => p - 1)}
+                   className="h-10 px-8 rounded-xl border border-slate-200 bg-white text-[10px] font-black uppercase tracking-widest hover:border-indigo-400 transition-all disabled:opacity-30 disabled:hover:border-slate-200 flex items-center gap-2"
+                 >
+                    <span>←</span> Previous
+                 </button>
+                 <button 
+                   disabled={(page + 1) * limit >= totalStudents}
+                   onClick={() => setPage(p => p + 1)}
+                   className="h-10 px-8 rounded-xl border border-slate-200 bg-white text-[10px] font-black uppercase tracking-widest hover:border-indigo-400 transition-all disabled:opacity-30 disabled:hover:border-slate-200 flex items-center gap-2"
+                 >
+                    Next <span>→</span>
+                 </button>
+              </div>
+           </div>
         </div>
       </div>
     </DashboardLayout>

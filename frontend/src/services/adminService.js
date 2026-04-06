@@ -5,6 +5,17 @@ const getDashboard = async () => {
   return response.data;
 };
 
+const getStudents = async (search = "", department = "", limit = 10, offset = 0) => {
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  if (department) params.append("department", department);
+  params.append("limit", limit);
+  params.append("offset", offset);
+  
+  const response = await api.get(`/admin/registry?${params.toString()}`);
+  return response.data;
+};
+
 const getStudentDetails = async (studentId) => {
   const response = await api.get(`/admin/students/${studentId}`);
   return response.data;
@@ -30,14 +41,26 @@ const createMentor = async (mentorData) => {
   const response = await api.post("/admin/mentors", mentorData);
   return response.data;
 };
+const deleteStudent = async (studentId) => {
+  const response = await api.delete(`/admin/students/${studentId}`);
+  return response.data;
+};
+
+const deleteMentor = async (mentorId) => {
+  const response = await api.delete(`/admin/mentors/${mentorId}`);
+  return response.data;
+};
 
 const adminService = {
   getDashboard,
+  getStudents,
   getStudentDetails,
   getMentorDetails,
   getGradeDistribution,
   createStudent,
   createMentor,
+  deleteStudent,
+  deleteMentor,
 };
 
 export default adminService;

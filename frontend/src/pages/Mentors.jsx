@@ -14,6 +14,19 @@ const Mentors = () => {
     password: "mentor123"
   });
   const [loading, setLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const handleDeleteMentor = async (mentorId) => {
+    try {
+      await adminService.deleteMentor(mentorId);
+      setMentors(mentors.filter(m => m.id !== mentorId));
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete mentor: " + (err.response?.data?.detail || err.message));
+      setDeleteConfirm(null);
+    }
+  };
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -151,11 +164,11 @@ const Mentors = () => {
               <thead>
                 <tr>
                   <th className="table-header w-24">ID</th>
-                  <th className="table-header">Faculty Identity</th>
+                  <th className="table-header">Mentor Name</th>
                   <th className="table-header">Faculty ID</th>
-                  <th className="table-header">Digital Path</th>
+                  <th className="table-header">Email</th>
                   <th className="table-header">Department</th>
-                  <th className="table-header text-right">Auth Status</th>
+                  <th className="table-header text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -185,10 +198,13 @@ const Mentors = () => {
                         {mentor.department}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-right">
-                       <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                          Active Faculty
-                       </span>
+                    <td className="px-8 py-6 text-center">
+                       <button
+                         onClick={() => setDeleteConfirm(mentor)}
+                         className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-colors"
+                       >
+                         Delete
+                       </button>
                     </td>
                   </tr>
                 ))}
@@ -197,6 +213,37 @@ const Mentors = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-10 max-w-md w-full mx-4 shadow-2xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Confirm Deletion</h3>
+              <p className="text-sm text-slate-500 mb-8">
+                Are you sure you want to delete <strong className="text-slate-900">{deleteConfirm.name}</strong>? This will remove all their mentorship assignments and course mappings.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-6 py-3 rounded-xl border border-slate-200 text-sm font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteMentor(deleteConfirm.id)}
+                  className="flex-1 px-6 py-3 rounded-xl bg-red-500 text-sm font-black text-white uppercase tracking-widest hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                >
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional, List
 from datetime import date
 from ..database import get_supabase
 from ..models import AdminCreateStudent, AdminCreateMentor, AssignStudentMentor, AssignCourseMentor
@@ -138,6 +139,40 @@ async def assign_student(
 
 
 # -----------------------------
+# GET PAGINATED STUDENTS (ADMIN REGISTRY)
+# -----------------------------
+@router.get("/registry")
+async def get_students(
+    search: Optional[str] = None,
+    department: Optional[str] = None,
+    limit: int = 10,
+    offset: int = 0,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
+
+    query = supabase.table("students")\
+        .select("id,name,email,roll_no,department,year,final_cgpa", count="exact")
+
+    if search:
+        # Search by name OR roll_no
+        query = query.or_(f"name.ilike.%{search}%,roll_no.ilike.%{search}%")
+
+    if department:
+        query = query.eq("department", department)
+
+    res = query.range(offset, offset + limit - 1).execute()
+
+    return {
+        "students": res.data,
+        "total": res.count,
+        "limit": limit,
+        "offset": offset
+    }
+
+
+# -----------------------------
 # ADMIN DASHBOARD
 # -----------------------------
 @router.get("/dashboard")
@@ -147,24 +182,18 @@ async def admin_dashboard(
 ):
     require_admin(user)
 
-    students = supabase.table("students")\
-        .select("id,name,email,roll_no,year,final_cgpa")\
-        .execute()
-
-    mentors = supabase.table("mentors")\
-        .select("id,name,email,department")\
-        .execute()
-
-    mappings = supabase.table("mentorships")\
-        .select("students(name,email), mentors(name,department), start_date")\
+    # Note: For dashboard summary, we still want counts
+    students_res = supabase.table("students").select("id", count="exact").execute()
+    mentors_res = supabase.table("mentors").select("id,name,email", count="exact").execute()
+    mappings_res = supabase.table("mentorships")\
+        .select("students(name,email,roll_no,department), mentors(name), start_date")\
         .execute()
 
     return {
-        "total_students": len(students.data),
-        "total_mentors": len(mentors.data),
-        "students": students.data,
-        "mentors": mentors.data,
-        "mentor_student_mapping": mappings.data
+        "total_students": students_res.count,
+        "total_mentors": mentors_res.count,
+        "mentors": mentors_res.data,
+        "mentor_student_mapping": mappings_res.data
     }
 
 
@@ -188,7 +217,7 @@ async def get_student(
         raise HTTPException(404, "Student not found")
 
     mentor = supabase.table("mentorships")\
-        .select("mentors(name,email,department)")\
+        .select("mentors(name,email)")\
         .eq("student_id", student_id)\
         .execute()
 
@@ -210,7 +239,7 @@ async def get_mentor_students(
     require_admin(user)
 
     mentor = supabase.table("mentors")\
-        .select("id,name,email,department")\
+        .select("id,name,email")\
         .eq("id", mentor_id)\
         .execute()
 
@@ -283,3 +312,65 @@ async def assign_course(
         "message": "Course assigned successfully",
         "mapping": res.data[0]
     }
+
+
+# -----------------------------
+# DELETE STUDENT
+# -----------------------------
+@router.delete("/students/{student_id}")
+async def delete_student(
+    student_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
+
+    student = supabase.table("students").select("id,name").eq("id", student_id).execute()
+    if not student.data:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    # Delete related records first (cascade)
+    # 1. Get enrollment IDs for this student
+    enrollments = supabase.table("enrollments").select("id").eq("student_id", student_id).execute()
+    for enr in enrollments.data:
+        # Delete assessments for each enrollment
+        supabase.table("assessments").delete().eq("enrollment_id", enr["id"]).execute()
+
+    # 2. Delete enrollments
+    supabase.table("enrollments").delete().eq("student_id", student_id).execute()
+
+    # 3. Delete mentorships
+    supabase.table("mentorships").delete().eq("student_id", student_id).execute()
+
+    # 4. Delete semester results
+    supabase.table("semester_results").delete().eq("student_id", student_id).execute()
+
+    # 5. Finally delete the student
+    supabase.table("students").delete().eq("id", student_id).execute()
+
+    return {"message": f"Student '{student.data[0]['name']}' deleted successfully"}
+
+
+# -----------------------------
+# DELETE MENTOR
+# -----------------------------
+@router.delete("/mentors/{mentor_id}")
+async def delete_mentor(
+    mentor_id: int,
+    supabase = Depends(get_supabase),
+    user = Depends(get_current_user)
+):
+    require_admin(user)
+
+    mentor = supabase.table("mentors").select("id,name").eq("id", mentor_id).execute()
+    if not mentor.data:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+
+    # Delete related records first
+    supabase.table("mentorships").delete().eq("mentor_id", mentor_id).execute()
+    supabase.table("course_mentors").delete().eq("mentor_id", mentor_id).execute()
+
+    # Delete the mentor
+    supabase.table("mentors").delete().eq("id", mentor_id).execute()
+
+    return {"message": f"Mentor '{mentor.data[0]['name']}' deleted successfully"}

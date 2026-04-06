@@ -68,7 +68,7 @@ const StudentDashboard = () => {
                       CONTINUING
                     </span>
                     <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
-                       Academic Status Check: Pass
+                         Status: Pass
                     </span>
                   </div>
                   <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase mb-1">{data?.student}</h2>
@@ -78,20 +78,20 @@ const StudentDashboard = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Current Standing</p>
-                       <p className="text-lg font-black text-slate-900 uppercase">SEMESTER - {getRoman(data?.semester_id)}</p>
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Current Semester</p>
+                         <p className="text-lg font-black text-slate-900 uppercase">Semester - {getRoman(data?.semester_id)}</p>
                      </div>
                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Academic Program</p>
-                       <p className="text-lg font-black text-slate-900 uppercase">B.E. - {getFullDept(data?.department)}</p>
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Program</p>
+                         <p className="text-lg font-black text-slate-900 uppercase">B.E. - {getFullDept(data?.department)}</p>
                      </div>
                      <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                       <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Assigned Academic Mentor</p>
-                       <p className="text-lg font-black text-indigo-600 uppercase underline decoration-indigo-200">{data?.mentor_name}</p>
+                         <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Mentor</p>
+                         <p className="text-lg font-black text-indigo-600 uppercase underline decoration-indigo-200">{data?.mentor_name}</p>
                      </div>
                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Cumulative Record</p>
-                       <p className="text-lg font-black text-slate-900">{data?.cgpa || '0.00'} / 10.00</p>
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">CGPA</p>
+                         <p className="text-lg font-black text-slate-900">{data?.cgpa || '0.00'} / 10.00</p>
                      </div>
                   </div>
                 </div>
@@ -108,8 +108,8 @@ const StudentDashboard = () => {
         {/* Historical Breakdown */}
         <div className="space-y-16">
           <div className="border-b border-slate-200 pb-4">
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Academic Breakdown</h3>
-            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Per-Semester Detailed Performance</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Semester Results</h3>
+              <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Semester-wise Details</p>
           </div>
 
           {data?.semesters?.sort((a, b) => b.semester - a.semester).map((sem) => (
@@ -119,7 +119,7 @@ const StudentDashboard = () => {
                   <div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Semester {getRoman(sem.semester)}</h3>
                     <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 italic">
-                       Academic Session SGPA: <span className="text-indigo-600 ml-2">{sem.sgpa?.toFixed(2) || '0.00'}</span>
+                         SGPA: <span className="text-indigo-600 ml-2">{sem.sgpa?.toFixed(2) || '0.00'}</span>
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -132,12 +132,12 @@ const StudentDashboard = () => {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr>
-                        <th className="table-header">Module Detail</th>
+                          <th className="table-header">Subject</th>
                         <th className="table-header text-center">PT-1</th>
                         <th className="table-header text-center">PT-2</th>
                         <th className="table-header text-center">Sem Exam</th>
                         <th className="table-header text-center">Final Score</th>
-                        <th className="table-header text-right">Validated Grade</th>
+                          <th className="table-header text-right">Grade</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">

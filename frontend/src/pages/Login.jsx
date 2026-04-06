@@ -44,7 +44,7 @@ const Login = () => {
             <span className="text-white font-black text-3xl italic">A</span>
           </div>
           <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter uppercase">Academic Sync</h1>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Authentication Gateway</p>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Sign In</p>
         </div>
 
         {error && (
@@ -55,24 +55,24 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-8">
           <div>
-            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 italic">Campus Credentials</label>
+            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 italic">Email Address</label>
             <input
               type="email"
               required
               className="w-full input-field h-14"
-              placeholder="COLLEGE EMAIL ADDRESS"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 italic">Security Key</label>
+            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 italic">Password</label>
             <input
               type="password"
               required
               className="w-full input-field h-14"
-              placeholder="••••••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -83,7 +83,7 @@ const Login = () => {
             disabled={loading}
             className="w-full btn-primary h-14 text-sm tracking-widest uppercase font-black"
           >
-            {loading ? "Decrypting..." : "Access Platform"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

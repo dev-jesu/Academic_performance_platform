@@ -13,6 +13,7 @@ class StudentBase(BaseModel):
     roll_no: Optional[str] = None
     year: Optional[int] = 1
     semester_id: Optional[int] = None
+    department: Optional[str] = None
     cgpa: Optional[float] = Field(None, ge=0, le=10)
     current_sgpa: Optional[float] = Field(0, ge=0, le=10)
     final_cgpa: Optional[float] = Field(0, ge=0, le=10)

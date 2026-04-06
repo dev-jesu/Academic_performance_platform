@@ -45,7 +45,7 @@ const MentorStudentDetails = () => {
   if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
 
   return (
-    <DashboardLayout title="Mentee Strategic Analytics">
+    <DashboardLayout title="Student Performance Details">
       <div className="space-y-12 w-full max-w-[1400px] mx-auto pb-20">
         
         {/* Profile Card & Back Action */}
@@ -82,7 +82,7 @@ const MentorStudentDetails = () => {
                <div className="glass-card p-10 bg-white">
                  <div className="flex items-center gap-4 mb-6">
                     <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
-                       Academic Status Check: Pass
+                       Status: Active
                     </span>
                  </div>
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Program of Study</p>
@@ -90,7 +90,7 @@ const MentorStudentDetails = () => {
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Assigned Academic Mentor</p>
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Mentor</p>
                        <p className="text-lg font-black text-indigo-600 uppercase underline decoration-indigo-100">{data?.mentor_name}</p>
                     </div>
                     <div className="p-6 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/20">
@@ -108,8 +108,8 @@ const MentorStudentDetails = () => {
         {/* Historical Academic Progression */}
         <div className="space-y-16">
           <div className="border-b border-slate-200 pb-4">
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Mentee Academic Portfolio</h3>
-            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Semester-wise Score Card Breakdown</p>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Academic Record</h3>
+            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Semester-wise Marks & Grades</p>
           </div>
 
           {data?.semesters?.sort((a, b) => b.semester - a.semester).map((sem) => (
@@ -117,25 +117,25 @@ const MentorStudentDetails = () => {
               <div className="table-container border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-8 border-b border-slate-200 flex items-center justify-between bg-white">
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Semester {getRoman(sem.semester)} Portfolio</h3>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Semester {getRoman(sem.semester)}</h3>
                     <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 italic">
                        Performance Result (SGPA): <span className="text-indigo-600 ml-2 font-black">{sem.sgpa?.toFixed(2) || '0.00'}</span>
                     </p>
                   </div>
                   <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{sem.courses.length} Modules Registered</span>
+                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{sem.courses.length} Courses</span>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr>
-                        <th className="table-header">Module Detail</th>
+                        <th className="table-header">Course</th>
                         <th className="table-header text-center">PT-1</th>
                         <th className="table-header text-center">PT-2</th>
                         <th className="table-header text-center">Sem Exam</th>
                         <th className="table-header text-center">Final Score</th>
-                        <th className="table-header text-right">Validated Grade</th>
+                        <th className="table-header text-right">Grade</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">

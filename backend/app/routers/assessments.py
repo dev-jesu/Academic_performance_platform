@@ -87,51 +87,52 @@ async def create_assessment(
     # RE-CALCULATE FINAL SCORE
     # -----------------------------
     marks_res = supabase.table("assessments") \
-        .select("score") \
+        .select("score, assessment_types(max_marks)") \
         .eq("enrollment_id", enrollment_id) \
         .execute()
 
-    marks = [m["score"] for m in marks_res.data]
+    if marks_res.data:
+        total_score = sum(m["score"] for m in marks_res.data if m.get("score") is not None)
+        total_max = sum(m["assessment_types"]["max_marks"] for m in marks_res.data if m.get("assessment_types") and m["assessment_types"].get("max_marks"))
 
-    if len(marks) >= 3:   # PT1 + PT2 + SEM
-        total = sum(marks)
-        percentage = (total / 200) * 100
-        from app.utils.grade import calculate_grade, get_grade_points
-        grade = calculate_grade(percentage)
+        if total_max > 0:
+            percentage = (total_score / total_max) * 100
+            from app.utils.grade import calculate_grade, get_grade_points
+            grade = calculate_grade(percentage)
 
-        # 1. Update Enrollment
-        supabase.table("enrollments").update({
-            "final_score": percentage,
-            "grade": grade
-        }).eq("id", enrollment_id).execute()
+            # 1. Update Enrollment
+            supabase.table("enrollments").update({
+                "final_score": percentage,
+                "grade": grade
+            }).eq("id", enrollment_id).execute()
 
-        # 2. Get Student/Semester info
-        enr_data = supabase.table("enrollments").select("student_id, semester_id").eq("id", enrollment_id).execute()
-        if enr_data.data:
-            sid = enr_data.data[0]["student_id"]
-            sem_id = enr_data.data[0]["semester_id"]
+            # 2. Get Student/Semester info
+            enr_data = supabase.table("enrollments").select("student_id, semester_id").eq("id", enrollment_id).execute()
+            if enr_data.data:
+                sid = enr_data.data[0]["student_id"]
+                sem_id = enr_data.data[0]["semester_id"]
 
-            # 3. Calculate SGPA
-            sem_enrs = supabase.table("enrollments").select("grade, courses(credits)").eq("student_id", sid).eq("semester_id", sem_id).execute()
-            pts, creds = 0.0, 0
-            for r in sem_enrs.data:
-                g = r.get("grade")
-                c = r.get("courses", {}).get("credits", 0)
-                if g and c:
-                    pts += (get_grade_points(g) * c)
-                    creds += c
-            sgpa = round(pts / creds, 2) if creds > 0 else 0.0
+                # 3. Calculate SGPA
+                sem_enrs = supabase.table("enrollments").select("grade, courses(credits)").eq("student_id", sid).eq("semester_id", sem_id).execute()
+                pts, creds = 0.0, 0
+                for r in sem_enrs.data:
+                    g = r.get("grade")
+                    c = (r.get("courses") or {}).get("credits", 0)
+                    if g and c:
+                        pts += (get_grade_points(g) * c)
+                        creds += c
+                sgpa = round(pts / creds, 2) if creds > 0 else 0.0
 
-            # Upsert semester_results
-            res = supabase.table("semester_results").select("id").eq("student_id", sid).eq("semester_id", sem_id).execute()
-            if res.data:
-                supabase.table("semester_results").update({"sgpa": sgpa}).eq("id", res.data[0]["id"]).execute()
-            else:
-                supabase.table("semester_results").insert({"student_id": sid, "semester_id": sem_id, "sgpa": sgpa}).execute()
+                # Upsert semester_results
+                res = supabase.table("semester_results").select("id").eq("student_id", sid).eq("semester_id", sem_id).execute()
+                if res.data:
+                    supabase.table("semester_results").update({"sgpa": sgpa}).eq("id", res.data[0]["id"]).execute()
+                else:
+                    supabase.table("semester_results").insert({"student_id": sid, "semester_id": sem_id, "sgpa": sgpa}).execute()
 
-            # 4. Update Student CGPA
-            all_res = supabase.table("semester_results").select("sgpa").eq("student_id", sid).execute()
-            cgpa = round(sum(r["sgpa"] for r in all_res.data) / len(all_res.data), 2) if all_res.data else sgpa
-            supabase.table("students").update({"current_sgpa": sgpa, "final_cgpa": cgpa}).eq("id", sid).execute()
+                # 4. Update Student CGPA
+                all_res = supabase.table("semester_results").select("sgpa").eq("student_id", sid).execute()
+                cgpa = round(sum(r["sgpa"] for r in all_res.data) / len(all_res.data), 2) if all_res.data else sgpa
+                supabase.table("students").update({"current_sgpa": sgpa, "final_cgpa": cgpa}).eq("id", sid).execute()
 
     return assessment

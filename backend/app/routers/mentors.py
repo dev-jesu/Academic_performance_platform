@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from typing import List, Optional
 from ..database import get_supabase
 from ..models import Mentor, MentorCreate
 from app.utils.dependencies import get_current_user   # ✅ NEW
@@ -60,16 +60,24 @@ async def get_mentor(
 @router.get("/{mentor_id}/students")
 async def get_mentor_students(
     mentor_id: int,
+    search: Optional[str] = None,
+    department: Optional[str] = None,
     supabase = Depends(get_supabase),
     user = Depends(get_current_user)
 ):
     require_mentor(user, mentor_id)
 
-    res = supabase.table("mentorships")\
-        .select("students(*)")\
-        .eq("mentor_id", mentor_id)\
-        .execute()
+    query = supabase.table("mentorships")\
+        .select("students!inner(*)")\
+        .eq("mentor_id", mentor_id)
 
+    if search:
+        query = query.or_(f"students.name.ilike.%{search}%,students.roll_no.ilike.%{search}%")
+    
+    if department:
+        query = query.eq("students.department", department)
+
+    res = query.execute()
     return [row["students"] for row in res.data]
 
 
