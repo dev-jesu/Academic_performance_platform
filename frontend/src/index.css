@@ -4,8 +4,12 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 selection:bg-blue-100 font-sans;
+    @apply bg-slate-50 text-slate-900 selection:bg-blue-100 font-sans text-sm antialiased;
   }
+  
+  h1 { @apply text-2xl font-black tracking-tighter; }
+  h2 { @apply text-xl font-black tracking-tight; }
+  h3 { @apply text-lg font-black tracking-tight; }
 }
 
 @layer components {
@@ -67,4 +71,13 @@
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes slideInRight {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

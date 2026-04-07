@@ -11,6 +11,7 @@ const MentorStudentDetails = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeSem, setActiveSem] = useState(null);
 
   const getRoman = (num) => {
     const roman = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII" };
@@ -31,6 +32,10 @@ const MentorStudentDetails = () => {
       try {
         const performanceData = await studentService.getPerformance(studentId);
         setData(performanceData);
+        if (performanceData?.semesters?.length > 0) {
+          const sorted = [...performanceData.semesters].sort((a, b) => b.semester - a.semester);
+          setActiveSem(sorted[0].semester);
+        }
       } catch (err) {
         setError("Failed to load student performance data.");
         console.error(err);
@@ -45,7 +50,7 @@ const MentorStudentDetails = () => {
   if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
 
   return (
-    <DashboardLayout title="Student Performance Details">
+    <DashboardLayout title="Student Marks View">
       <div className="space-y-12 w-full max-w-[1400px] mx-auto pb-20">
         
         {/* Profile Card & Back Action */}
@@ -85,7 +90,7 @@ const MentorStudentDetails = () => {
                        Status: Active
                     </span>
                  </div>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Program of Study</p>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Degree</p>
                  <h4 className="text-xl font-black text-slate-800 uppercase mb-8 tracking-tight">B.E. - {getFullDept(data?.department)}</h4>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -105,71 +110,98 @@ const MentorStudentDetails = () => {
             </div>
         </div>
 
-        {/* Historical Academic Progression */}
-        <div className="space-y-16">
-          <div className="border-b border-slate-200 pb-4">
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Academic Record</h3>
-            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Semester-wise Marks & Grades</p>
+        {/* Semester Marks — Tabbed Navigation */}
+        {data?.semesters?.length > 0 && (
+        <div className="space-y-0">
+          {/* Section Header */}
+          <div className="mb-8">
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Marks Table</h3>
+              <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">Select a semester to view marks</p>
           </div>
 
-          {data?.semesters?.sort((a, b) => b.semester - a.semester).map((sem) => (
-            <div key={sem.semester} className="space-y-8">
-              <div className="table-container border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-slate-200 flex items-center justify-between bg-white">
-                  <div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Semester {getRoman(sem.semester)}</h3>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 italic">
-                       Performance Result (SGPA): <span className="text-indigo-600 ml-2 font-black">{sem.sgpa?.toFixed(2) || '0.00'}</span>
-                    </p>
+          {/* Semester Tab Pills */}
+          <div className="glass-card p-2 mb-8 inline-flex gap-1.5 flex-wrap bg-white shadow-sm border border-slate-100">
+            {data.semesters
+              .sort((a, b) => a.semester - b.semester)
+              .map((sem) => (
+                <button
+                  key={sem.semester}
+                  onClick={() => setActiveSem(sem.semester)}
+                  className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+                    activeSem === sem.semester
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  }`}
+                >
+                  Sem {getRoman(sem.semester)}
+                </button>
+              ))}
+          </div>
+
+          {/* Active Semester Content */}
+          {(() => {
+            const sem = data.semesters.find(s => s.semester === activeSem);
+            if (!sem) return null;
+            return (
+              <div key={sem.semester} className="space-y-8 animate-fade-in">
+                <div className="table-container border border-slate-100 shadow-sm overflow-hidden">
+                  <div className="p-8 border-b border-slate-200 flex items-center justify-between bg-white">
+                    <div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Semester {getRoman(sem.semester)}</h3>
+                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 italic">
+                         Semester GPA (SGPA): <span className="text-indigo-600 ml-2 font-black">{sem.sgpa?.toFixed(2) || '0.00'}</span>
+                      </p>
+                    </div>
+                    <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
+                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{sem.courses.length} Subjects</span>
+                    </div>
                   </div>
-                  <div className="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{sem.courses.length} Courses</span>
-                  </div>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="table-header">Course</th>
-                        <th className="table-header text-center">PT-1</th>
-                        <th className="table-header text-center">PT-2</th>
-                        <th className="table-header text-center">Sem Exam</th>
-                        <th className="table-header text-center">Final Score</th>
-                        <th className="table-header text-right">Grade</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {sem.courses.map((course, idx) => (
-                        <tr key={idx} className="table-row group">
-                          <td className="px-8 py-6">
-                            <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{course.course}</p>
-                          </td>
-                          <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.pt1 ?? "—"}</td>
-                          <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.pt2 ?? "—"}</td>
-                          <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.semester_exam ?? "—"}</td>
-                          <td className="px-8 py-6 text-center text-sm font-black text-indigo-600 bg-indigo-50/20">{course.final_score ?? "—"}</td>
-                          <td className="px-8 py-6 text-right">
-                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
-                              course.grade === 'S' || course.grade === 'A' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                              course.grade === 'B' || course.grade === 'C' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                              'bg-slate-50 text-slate-500 border-slate-700/50'
-                            }`}>
-                              {course.grade || "PENDING"}
-                            </span>
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="table-header">Subject</th>
+                          <th className="table-header text-center">PT-1</th>
+                          <th className="table-header text-center">PT-2</th>
+                          <th className="table-header text-center">Sem Exam</th>
+                          <th className="table-header text-center">Final Score</th>
+                          <th className="table-header text-right">Grade</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {sem.courses.map((course, idx) => (
+                          <tr key={idx} className="table-row group">
+                            <td className="px-8 py-6">
+                              <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{course.course}</p>
+                            </td>
+                            <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.pt1 ?? "—"}</td>
+                            <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.pt2 ?? "—"}</td>
+                            <td className="px-8 py-6 text-center text-sm font-black text-slate-700 font-mono">{course.semester_exam ?? "—"}</td>
+                            <td className="px-8 py-6 text-center text-sm font-black text-indigo-600 bg-indigo-50/20">{course.final_score ?? "—"}</td>
+                            <td className="px-8 py-6 text-right">
+                              <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                                course.grade === 'S' || course.grade === 'A' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                course.grade === 'B' || course.grade === 'C' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                                'bg-slate-50 text-slate-500 border-slate-700/50'
+                              }`}>
+                                {course.grade || "PENDING"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <div className="pl-6 border-l-4 border-indigo-500/10">
+                  <StudentPerformanceChart data={sem.courses} />
                 </div>
               </div>
-              
-              <div className="pl-6 border-l-4 border-indigo-500/10">
-                <StudentPerformanceChart data={sem.courses} />
-              </div>
-            </div>
-          ))}
+            );
+          })()}
         </div>
+        )}
       </div>
     </DashboardLayout>
   );

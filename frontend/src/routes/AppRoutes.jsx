@@ -7,6 +7,7 @@ import StudentDashboard from "../pages/StudentDashboard";
 import MentorDashboard from "../pages/MentorDashboard";
 import EnrollmentManagement from "../pages/EnrollmentManagement";
 import MentorStudentDetails from "../pages/MentorStudentDetails";
+import MentorshipMapping from "../pages/MentorshipMapping";
 import GradeManagement from "../pages/GradeManagement";
 import Mentors from "../pages/Mentors";
 import Profile from "../pages/Profile";
@@ -58,6 +59,15 @@ function AppRoutes() {
           element={
             <ProtectedRoutes allowedRoles={["admin"]}>
               <EnrollmentManagement />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/admin/mentorship-mapping"
+          element={
+            <ProtectedRoutes allowedRoles={["admin"]}>
+              <MentorshipMapping />
             </ProtectedRoutes>
           }
         />

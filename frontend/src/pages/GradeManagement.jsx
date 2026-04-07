@@ -12,6 +12,8 @@ const GradeManagement = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mentorId, setMentorId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -84,7 +86,9 @@ const GradeManagement = () => {
           });
         }
       }
-      alert("Marks saved successfully!");
+      setSuccessMessage(`${student.students.name}'s marks have been updated successfully!`);
+      setTimeout(() => setSuccessMessage(""), 4000);
+      setEditingId(null);
     } catch (err) {
       console.error(err);
       alert("Failed to save marks. Check console for details.");
@@ -99,14 +103,26 @@ const GradeManagement = () => {
   };
 
   return (
-    <DashboardLayout title="Grade Management">
-      <div className="space-y-10 w-full max-w-[1400px] mx-auto">
+    <DashboardLayout title="Entry Marks">
+      <div className="space-y-10 w-full max-w-[1400px] mx-auto relative">
+        {successMessage && (
+          <div className="fixed top-24 right-10 z-50 animate-slide-in-right">
+            <div className="bg-emerald-500 text-white px-8 py-5 rounded-2xl shadow-2xl shadow-emerald-500/20 flex items-center gap-4 border border-emerald-400">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center font-black">✓</div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Update Saved</p>
+                <p className="text-sm font-black uppercase tracking-tighter">{successMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="glass-card p-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <label className="block text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Academic Selection</label>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Course Catalog</h3>
-              <p className="text-slate-500 text-sm font-medium">Select a course to manage student performance records.</p>
+              <label className="block text-indigo-400 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Select Class</label>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">Subject List</h3>
+              <p className="text-slate-500 text-xs font-medium">Select a course to manage student performance records.</p>
             </div>
             
             <select
@@ -126,8 +142,8 @@ const GradeManagement = () => {
           <div className="table-container">
             <div className="p-8 border-b border-slate-200 flex items-center justify-between bg-white">
               <div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight">Student Enrollment List</h3>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1.5 italic">Session 2023-24</p>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Students in Class</h3>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1 italic">Session 2023-24</p>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
                 <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
@@ -138,11 +154,11 @@ const GradeManagement = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr>
-                    <th className="table-header">Student Identity</th>
+                    <th className="table-header">Student Name</th>
                     <th className="table-header">PT-1 <span className="text-slate-600 ml-1">(/50)</span></th>
                     <th className="table-header">PT-2 <span className="text-slate-600 ml-1">(/50)</span></th>
                     <th className="table-header">Semester <span className="text-slate-600 ml-1">(/100)</span></th>
-                    <th className="table-header text-right">Commit Changes</th>
+                    <th className="table-header text-right">Save Marks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -154,46 +170,58 @@ const GradeManagement = () => {
                             {s.students.name[0]}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{s.students.name}</p>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{s.students.email}</p>
+                            <p className="text-xs font-black text-slate-900 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{s.students.name}</p>
+                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{s.students.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-6 py-4">
                         <input
                           type="number"
                           placeholder="00"
-                          className="w-28 input-field h-11 text-center font-black text-lg"
+                          readOnly={editingId !== s.id}
+                          className={`w-24 input-field h-9 text-center font-black text-base transition-all duration-300 ${editingId === s.id ? 'border-indigo-500 ring-4 ring-indigo-500/10 scale-105 bg-white' : 'border-transparent bg-slate-50 opacity-60 pointer-events-none'}`}
                           value={getMark(s, 1)}
                           onChange={(e) => handleMarkChange(s.id, 1, e.target.value)}
                         />
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-6 py-4">
                         <input
                           type="number"
                           placeholder="00"
-                          className="w-28 input-field h-11 text-center font-black text-lg"
+                          readOnly={editingId !== s.id}
+                          className={`w-24 input-field h-9 text-center font-black text-base transition-all duration-300 ${editingId === s.id ? 'border-indigo-500 ring-4 ring-indigo-500/10 scale-105 bg-white' : 'border-transparent bg-slate-50 opacity-60 pointer-events-none'}`}
                           value={getMark(s, 2)}
                           onChange={(e) => handleMarkChange(s.id, 2, e.target.value)}
                         />
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-6 py-4">
                         <input
                           type="number"
                           placeholder="00"
-                          className="w-28 input-field h-11 text-center font-black text-lg"
+                          readOnly={editingId !== s.id}
+                          className={`w-24 input-field h-9 text-center font-black text-base transition-all duration-300 ${editingId === s.id ? 'border-indigo-500 ring-4 ring-indigo-500/10 scale-105 bg-white' : 'border-transparent bg-slate-50 opacity-60 pointer-events-none'}`}
                           value={getMark(s, 3)}
                           onChange={(e) => handleMarkChange(s.id, 3, e.target.value)}
                         />
                       </td>
-                      <td className="px-8 py-6 text-right">
-                        <button
-                          onClick={() => saveMarks(s.id)}
-                          disabled={saving}
-                          className="btn-primary py-2 px-8 text-xs h-11 min-w-[120px]"
-                        >
-                          {saving ? "Syncing..." : "Update Mark"}
-                        </button>
+                      <td className="px-6 py-4 text-right">
+                        {editingId === s.id ? (
+                           <button
+                             onClick={() => saveMarks(s.id)}
+                             disabled={saving}
+                             className="btn-primary py-1.5 px-6 text-[10px] h-9 min-w-[100px] bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"
+                           >
+                             {saving ? "..." : "Confirm"}
+                           </button>
+                        ) : (
+                           <button
+                             onClick={() => setEditingId(s.id)}
+                             className="btn-glass py-1.5 px-6 text-[10px] h-9 min-w-[100px] border-indigo-200 text-indigo-600 font-black uppercase tracking-widest hover:bg-indigo-50"
+                           >
+                             Update
+                           </button>
+                        )}
                       </td>
                     </tr>
                   ))}

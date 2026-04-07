@@ -56,6 +56,11 @@ const resetPassword = async (user_id, user_type, new_password) => {
   return response.data;
 };
 
+const assignStudentMentor = async (student_id, mentor_id) => {
+  const response = await api.post("/admin/assign-student", { student_id, mentor_id });
+  return response.data;
+};
+
 const adminService = {
   getDashboard,
   getStudents,
@@ -67,6 +72,7 @@ const adminService = {
   deleteStudent,
   deleteMentor,
   resetPassword,
+  assignStudentMentor,
 };
 
 export default adminService;

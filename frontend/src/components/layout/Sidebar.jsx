@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const role = localStorage.getItem("role");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -12,6 +12,7 @@ const Sidebar = () => {
       { name: "Students", path: "/students" },
       { name: "Mentors", path: "/mentors" },
       { name: "Manage Enrollments", path: "/admin/manage-enrollments" },
+      { name: "Manage Mentorship", path: "/admin/mentorship-mapping" },
       { name: "Profile", path: "/profile" },
     ],
     mentor: [
@@ -28,8 +29,17 @@ const Sidebar = () => {
   const items = menuItems[role] || [];
 
   return (
-    <aside className="w-68 glass-sidebar min-h-screen sticky top-0 hidden md:flex flex-col z-50 transition-all duration-500">
-      <div className="p-8">
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside className={`w-64 glass-sidebar min-h-screen fixed md:sticky top-0 h-screen flex-col z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex`}>
+        <div className="p-8">
         <div className="flex items-center gap-3 mb-12">
           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
             <span className="text-white font-black text-2xl tracking-tighter italic">SP</span>
@@ -68,6 +78,7 @@ const Sidebar = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

@@ -16,19 +16,11 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="flex flex-col items-center md:items-end gap-4">
-          <div className="flex items-center gap-8">
-             <a href="#" className="text-[10px] font-black text-slate-400 hover:text-blue-600 transition-colors uppercase tracking-[0.15em] relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[1px] after:bg-blue-600 after:transition-all hover:after:w-full">Support</a>
-             <a href="#" className="text-[10px] font-black text-slate-400 hover:text-blue-600 transition-colors uppercase tracking-[0.15em] relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[1px] after:bg-blue-600 after:transition-all hover:after:w-full">Privacy</a>
-             <a href="#" className="text-[10px] font-black text-slate-400 hover:text-blue-600 transition-colors uppercase tracking-[0.15em] relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[1px] after:bg-blue-600 after:transition-all hover:after:w-full">Terms</a>
-          </div>
-          
-          <div className="text-center md:text-right">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] leading-relaxed">
-              &copy; {currentYear} Academic Performance Platform.
-              <span className="block md:inline md:ml-1 text-slate-400 font-medium">Empowering students through data.</span>
-            </p>
-          </div>
+        <div className="text-center md:text-right">
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] leading-relaxed">
+            &copy; {currentYear} Academic Performance Platform.
+            <span className="block md:inline md:ml-1 text-slate-400 font-medium">Empowering students through data.</span>
+          </p>
         </div>
       </div>
     </footer>

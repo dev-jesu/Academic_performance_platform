@@ -131,10 +131,10 @@ const AdminDashboard = () => {
                   <h3 className="text-xl font-black text-slate-900 tracking-tight underline decoration-indigo-200 decoration-4 underline-offset-8">Grades Overview</h3>
                   <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-4 italic">All Departments</p>
                 </div>
-                <div className="flex flex-col gap-2">
-                   <span className="text-[10px] font-black text-slate-400 uppercase text-right">Filter Department</span>
+                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                   <span className="text-[10px] font-black text-slate-400 uppercase sm:text-right">Filter Department</span>
                    <select 
-                     className="input-field h-10 px-6 text-[10px] font-black uppercase tracking-widest w-48 bg-slate-50"
+                     className="input-field h-10 px-6 text-[10px] font-black uppercase tracking-widest w-full sm:w-48 bg-slate-50"
                      value={selectedDept}
                      onChange={(e) => setSelectedDept(e.target.value)}
                    >
@@ -161,15 +161,15 @@ const AdminDashboard = () => {
             <div className="p-8 border-b border-slate-100 bg-white">
                <h3 className="text-xl font-black text-slate-900 tracking-tight">Mentor-Student List</h3>
                <div className="mt-6 flex gap-4">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 w-full">
                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-                               <input 
-                                  type="text" 
-                                  placeholder="Search mentor or student..." 
-                                  className="input-field h-10 pl-10 text-[10px] font-black uppercase tracking-widest"
-                                  value={mappingSearch}
-                                  onChange={(e) => setMappingSearch(e.target.value)}
-                               />
+                     <input 
+                        type="text" 
+                        placeholder="Search mentor or student..." 
+                        className="input-field h-10 pl-10 text-[10px] font-black uppercase tracking-widest w-full"
+                        value={mappingSearch}
+                        onChange={(e) => setMappingSearch(e.target.value)}
+                     />
                   </div>
                </div>
             </div>
@@ -210,19 +210,19 @@ const AdminDashboard = () => {
                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">All Students</p>
               </div>
               
-              <div className="flex flex-col md:flex-row items-center gap-4">
-                 <div className="relative">
+              <div className="flex flex-col sm:flex-row w-full md:w-auto items-center gap-4">
+                 <div className="relative w-full sm:w-auto">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                     <input 
                       type="text" 
                       placeholder="Search by Name or Roll No" 
-                      className="input-field h-12 w-64 pl-12 text-[10px] font-black uppercase tracking-widest"
+                      className="input-field h-12 w-full sm:w-64 pl-12 text-[10px] font-black uppercase tracking-widest"
                       value={studentSearch}
                       onChange={(e) => { setStudentSearch(e.target.value); setPage(0); }}
                     />
                  </div>
                  <select 
-                    className="input-field h-12 px-6 text-[10px] font-black uppercase tracking-widest w-48 bg-slate-50"
+                    className="input-field h-12 px-6 text-[10px] w-full sm:w-48 font-black uppercase tracking-widest bg-slate-50"
                     value={studentFilterDept}
                     onChange={(e) => { setStudentFilterDept(e.target.value); setPage(0); }}
                  >
