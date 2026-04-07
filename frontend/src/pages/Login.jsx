@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
+import Footer from "../components/layout/Footer";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +34,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-6">
       {/* Decorative Subtle Gradients */}
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-blue-100/50 blur-[120px] rounded-full" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-100/40 blur-[120px] rounded-full" />
@@ -94,6 +96,8 @@ const Login = () => {
         </div>
       </div>
     </div>
+    <Footer />
+  </div>
   );
 };
 

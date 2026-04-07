@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const DashboardLayout = ({ children, title }) => {
   return (
@@ -13,6 +14,7 @@ const DashboardLayout = ({ children, title }) => {
             {children}
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );
